@@ -1,11 +1,15 @@
 from manim import *
 
+def round_up_to_even(n):
+    return int(np.ceil(n / 2.0)) * 2
+
+def round_down_to_even(n):
+    return int(np.floor(n / 2.0)) * 2
 class SpaceTimeGrid:
     def __init__(self, scene, v):
         # Create the coordinate system
         self.scene = scene
         self.speed = v
-        self.angle = np.arctan(self.speed)
 
         self.scale = 24
 
@@ -31,12 +35,12 @@ class SpaceTimeGrid:
             color=YELLOW,
             stroke_width = 32 / self.scale)
         
-        x__label = Text("Space (x')", font_size=36).move_to(self.grid.coords_to_point(self.scale, self.speed * (self.scale + 1)))
+        x__label = Text("Space (x')", font_size=36).move_to(self.grid.coords_to_point(self.scale, self.speed * self.scale + 0.5))
 
         x__ticks = VGroup()
         x__labels = VGroup()
 
-        for i in range(int((-self.scale + 1) * (1 - self.speed**2)**(1/2)), int(self.scale * (1 - self.speed**2)**(1/2)), 2):
+        for i in range(round_up_to_even(-self.scale * (1 - self.speed**2)**(1/2)), round_down_to_even(self.scale * (1 - self.speed**2)**(1/2)), 2):
             new_cord = (i / (1 - self.speed**2)**(1/2))
             tick = Line(
                 start=self.grid.coords_to_point(new_cord - self.speed * 0.25,  self.speed * new_cord + 0.25),
@@ -57,12 +61,12 @@ class SpaceTimeGrid:
             color=YELLOW,
             stroke_width = 32 / self.scale)
         
-        ct__label = Text("Time (ct')", font_size=36).move_to(self.grid.coords_to_point(self.speed * (self.scale + 3), self.scale - 1))
+        ct__label = Text("Time (ct')", font_size=36).move_to(self.grid.coords_to_point(self.speed * self.scale + 2, self.scale - 1))
 
         ct__ticks = VGroup()
         ct__labels = VGroup()
 
-        for i in range(int((-self.scale + 1) * (1 - self.speed**2)**(1/2)), int(self.scale * (1 - self.speed**2)**(1/2)), 2):
+        for i in range(round_up_to_even(-self.scale * (1 - self.speed**2)**(1/2)), round_down_to_even(self.scale * (1 - self.speed**2)**(1/2)), 2):
             new_cord = (i / (1 - self.speed**2)**(1/2))
             tick = Line(
                 start=self.grid.coords_to_point(self.speed * new_cord - 0.25,  new_cord + self.speed * 0.25),
@@ -93,62 +97,6 @@ class SpaceTimeGrid:
     def remove(self):
         self.scene.clear()
         return
-
-    def plot(self, x, ct):
-        # Create the lines
-        x_line = Line(self.grid.coords_to_point(x, 0), self.grid.coords_to_point(x, ct), stroke_width=1)
-        ct_line = Line(self.grid.coords_to_point(0, ct), self.grid.coords_to_point(x, ct), stroke_width=1)
-        self.scene.add(x_line, ct_line)
-        self.everything.add(x_line, ct_line)
-        self.scene.play(Create(x_line), Create(ct_line))
-        self.scene.wait(0.1)
-
-        # Create the point
-        point = Dot(self.grid.coords_to_point(x, ct), color=RED, radius=0.04)
-        self.scene.add(point)
-        self.everything.add(point)
-        self.scene.play(Create(point))
-        self.scene.wait(0.1)
-
-        # Create the lines 
-        new_x = (x - self.speed * ct) / (1 - self.speed**2)**(1/2)
-        new_ct = (ct - self.speed * x) / (1 - self.speed**2)**(1/2)
-        x__line = Line(self.grid.coords_to_point(x, ct), self.grid.coords_to_point(*self.prime_to_cords(new_x, 0)), color=YELLOW, stroke_width=0.5)
-        ct__line = Line(self.grid.coords_to_point(x, ct), self.grid.coords_to_point(*self.prime_to_cords(0, new_ct)), color=YELLOW, stroke_width=0.5)
-        self.scene.add(x__line, ct__line)
-        self.everything.add(x__line, ct__line)
-        self.scene.play(Create(x__line), Create(ct__line))
-        self.scene.wait(0.1)
-
-        return (new_x, new_ct)
-    
-    def plot_prime(self, x, ct):
-        # Create the lines
-        (new_x, new_ct) = self.prime_to_cords(x, ct)
-        x__line = Line(self.grid.coords_to_point(*self.prime_to_cords(x, 0)), self.grid.coords_to_point(new_x, new_ct), color=YELLOW, stroke_width=0.5)
-        ct__line = Line(self.grid.coords_to_point(*self.prime_to_cords(0, ct)), self.grid.coords_to_point(new_x, new_ct), color=YELLOW, stroke_width=0.5)
-        self.scene.add(x__line, ct__line)
-        self.everything.add(x__line, ct__line)
-        self.scene.play(Create(x__line), Create(ct__line))
-        self.scene.wait(0.1)
-
-        # Create the point
-        point = Dot(self.grid.coords_to_point(new_x, new_ct), color=RED, radius=0.04)
-        self.scene.add(point)
-        self.everything.add(point)
-        self.scene.play(Create(point))
-        self.scene.wait(0.1)
-
-        # Create the lines
-        x_line = Line(self.grid.coords_to_point(new_x, new_ct), self.grid.coords_to_point(new_x, 0), stroke_width=1)
-        ct_line = Line(self.grid.coords_to_point(new_x, new_ct), self.grid.coords_to_point(0, new_ct), stroke_width=1)
-        self.scene.add(x_line, ct_line)
-        self.everything.add(x_line, ct_line)
-        self.scene.play(Create(x_line), Create(ct_line))
-        self.scene.wait(0.1)
-
-        return (new_x, new_ct)
-        
     
     def prime_to_cords(self, x, ct):
         # Convert the coordinates to the new system
@@ -157,16 +105,132 @@ class SpaceTimeGrid:
         return tuple(map(lambda x, y: x + y, (new_x, self.speed * new_x), (self.speed * new_ct, new_ct)))
         # Return the new coordinates
 
+class Location:
+    def __init__(self, diagram, x, ct):
+        self.x = x
+        self.ct = ct
+        self.diagram = diagram
+        self._x = (x - diagram.speed * ct) / (1 - diagram.speed**2)**(1/2)
+        self._ct = (ct - diagram.speed * x) / (1 - diagram.speed**2)**(1/2)
+        self.everything = VGroup()
+        return
+
+    def plot_lines(self):
+        # Create the lines
+        x_line = Line(self.diagram.grid.coords_to_point(self.x, 0), self.diagram.grid.coords_to_point(self.x, self.ct), stroke_width=1)
+        ct_line = Line(self.diagram.grid.coords_to_point(0, self.ct), self.diagram.grid.coords_to_point(self.x, self.ct), stroke_width=1)
+        self.everything.add(x_line, ct_line)
+        self.diagram.scene.play(Create(x_line), Create(ct_line))
+        self.diagram.scene.wait(0.1)
+        return
+
+    def plot_point(self):
+        # Create the point
+        point = Dot(self.diagram.grid.coords_to_point(self.x, self.ct), color=RED, radius=0.04)
+        self.everything.add(point)
+        self.diagram.scene.play(Create(point))
+        self.diagram.scene.wait(0.1)
+        return
+
+    def plot__lines(self):
+        # Create the lines 
+        x__line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(self._x, 0)), color=YELLOW, stroke_width=0.5)
+        ct__line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(0, self._ct)), color=YELLOW, stroke_width=0.5)
+        self.everything.add(x__line, ct__line)
+        self.diagram.scene.play(Create(x__line), Create(ct__line))
+        self.diagram.scene.wait(0.1)
+        return
+
+    def get_prime_coords(self):
+        return (self._x, self._ct)
+    
+    def create(self):
+        self.plot_lines()
+        self.plot_point()
+        self.plot__lines()
+        return 
+
+    def remove(self):
+        self.diagram.scene.remove(*self.everything)
+        return
+        
+
+class PrimeLocation:
+    def __init__(self, diagram, x, ct):
+        self._x = x
+        self._ct = ct   
+        self.diagram = diagram
+        (self.x, self.ct) = diagram.prime_to_cords(x, ct)
+        self.everything = VGroup()
+        return
+
+    def plot__lines(self):
+        # Create the lines
+        x__line = Line(self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(self._x, 0)), self.diagram.grid.coords_to_point(self.x, self.ct), color=YELLOW, stroke_width=0.5)
+        ct__line = Line(self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(0, self._ct)), self.diagram.grid.coords_to_point(self.x, self.ct), color=YELLOW, stroke_width=0.5)
+        self.everything.add(x__line, ct__line)
+        self.diagram.scene.play(Create(x__line), Create(ct__line))
+        self.diagram.scene.wait(0.1)
+        return
+
+    def plot_point(self):
+        # Create the point
+        point = Dot(self.diagram.grid.coords_to_point(self.x, self.ct), color=RED, radius=0.04)
+        self.everything.add(point)
+        self.diagram.scene.play(Create(point))
+        self.diagram.scene.wait(0.1)
+        return
+
+    def plot_lines(self):
+        # Create the lines
+        x_line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(self.x, 0), stroke_width=1)
+        ct_line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(0, self.ct), stroke_width=1)
+        self.everything.add(x_line, ct_line)
+        self.diagram.scene.play(Create(x_line), Create(ct_line))
+        self.diagram.scene.wait(0.1)
+        return
+
+    def get_coords(self):
+        return (self.x, self.ct)
+    
+    def create(self):
+        self.plot__lines()
+        self.plot_point()
+        self.plot_lines()
+        return
+
+    def remove(self):  
+        self.diagram.scene.remove(*self.everything)
+        return
+
 class Scene1(Scene):
     def construct(self):
-        diagram = SpaceTimeGrid(self, .6)
+        diagram = SpaceTimeGrid(self, 0.6)
+        self.wait(0.1)
         diagram.show()
         self.wait(0.1)
-        (x1, y1) = diagram.plot(5, 3)
-        (x2, y2) = diagram.plot(3, 5)
-        (x3, y3) = diagram.plot(4, 4)
-        (x4, y4) = diagram.plot_prime(4, 4)
+        point_1 = Location(diagram, 5, 3)
+        point_2 = Location(diagram, 3, 5)
+        point_3 = Location(diagram, 4, 4)
+        prime_point_1 = PrimeLocation(diagram, 4,4)
+        point_1.plot_lines()
+        point_1.plot_point()
+        point_2.plot_lines()
+        point_2.plot_point()
+        point_3.create()
+        prime_point_1.create()
+        self.wait(0.1)
+        self.play(FadeOut(point_1.everything))
+        self.wait(0.1)
+        self.play(FadeOut(point_2.everything))
+        self.wait(0.1)
+        self.play(FadeOut(point_3.everything))
+        self.wait(0.1)
+        self.play(FadeOut(prime_point_1.everything))
         self.wait(0.1)
         self.play(FadeOut(diagram.everything))
         diagram.remove()
+        self.wait(0.1)
+        diagram2 = SpaceTimeGrid(self, .8)
+        diagram2.show()
         self.wait(0.1)
