@@ -12,10 +12,11 @@ class SpaceTimeGrid:
         self.speed = v
 
         self.scale = 24
+        self.count = 2
 
         self.grid = Axes(
-            x_range=[-self.scale, self.scale, 2],
-            y_range=[-self.scale, self.scale, 2],
+            x_range=[-self.scale, self.scale, self.count],
+            y_range=[-self.scale, self.scale, self.count],
             x_length=self.scale,  # Enlarged so it looks good after scaling
             y_length=self.scale,
             axis_config={"include_numbers": True, "stroke_width": 32 / self.scale},
@@ -104,6 +105,41 @@ class SpaceTimeGrid:
         new_ct = (ct / (1 - self.speed**2)**(1/2))
         return tuple(map(lambda x, y: x + y, (new_x, self.speed * new_x), (self.speed * new_ct, new_ct)))
         # Return the new coordinates
+    
+    def change_speed(self, new_speed):
+        self.show()
+        new_diagram = SpaceTimeGrid(self.scene, new_speed)
+        new_things = [*new_diagram.everything][3:]
+        old_things = [*self.everything][3:]
+        difference = int((len(new_things) - (len(old_things))) / 4)
+        if difference > 0:
+            keep_length = int((len(old_things) - 10) / 4)
+            first_half = new_things[:int(len(new_things)/2)]
+            del first_half[2:int(2 + difference / 2)]
+            del first_half[int(keep_length + 5):int(keep_length + 5 + difference)]
+            del first_half[-int(difference / 2):]
+            second_half = new_things[int(len(new_things)/2):]
+            del second_half[2:int(2 + difference / 2)]
+            del second_half[int(keep_length + 5):int(keep_length + 5 + difference)]
+            del second_half[-int(difference / 2):]
+            new_things = first_half + second_half
+        elif difference < 0:
+            difference = -difference
+            keep_length = int((len(new_things) - 10) / 4)
+            first_half = old_things[:int(len(old_things)/2)]
+            del first_half[2:int(2 + difference / 2)]
+            del first_half[int(keep_length + 5):int(keep_length + 5 + difference)]
+            del first_half[-int(difference / 2):]
+            second_half = old_things[int(len(old_things)/2):]
+            del second_half[2:int(2 + difference / 2)]
+            del second_half[int(keep_length + 5):int(keep_length + 5 + difference)]
+            del second_half[-int(difference / 2):]
+            old_things = first_half + second_half
+
+        self.scene.play(TransformMatchingShapes(VGroup(*old_things), VGroup(*new_things)))
+        self.remove()
+        new_diagram.show()
+        return
 
 class Location:
     def __init__(self, diagram, x, ct):
@@ -205,32 +241,34 @@ class PrimeLocation:
 
 class Scene1(Scene):
     def construct(self):
-        diagram = SpaceTimeGrid(self, 0.6)
+        # diagram = SpaceTimeGrid(self, 0.6)
+        # self.wait(0.1)
+        # diagram.show()
+        # self.wait(0.1)
+        # point_1 = Location(diagram, 5, 3)
+        # point_2 = Location(diagram, 3, 5)
+        # point_3 = Location(diagram, 4, 4)
+        # prime_point_1 = PrimeLocation(diagram, 4,4)
+        # point_1.plot_lines()
+        # point_1.plot_point()
+        # point_2.plot_lines()
+        # point_2.plot_point()
+        # point_3.create()
+        # prime_point_1.create()
+        # self.wait(0.1)
+        # self.play(FadeOut(point_1.everything))
+        # self.wait(0.1)
+        # self.play(FadeOut(point_2.everything))
+        # self.wait(0.1)
+        # self.play(FadeOut(point_3.everything))
+        # self.wait(0.1)
+        # self.play(FadeOut(prime_point_1.everything))
+        # self.wait(0.1)
+        # self.play(FadeOut(diagram.everything))
+        # diagram.remove()
+        # self.wait(0.1)
+        diagram2 = SpaceTimeGrid(self, .3)
+        # diagram2.show()
         self.wait(0.1)
-        diagram.show()
-        self.wait(0.1)
-        point_1 = Location(diagram, 5, 3)
-        point_2 = Location(diagram, 3, 5)
-        point_3 = Location(diagram, 4, 4)
-        prime_point_1 = PrimeLocation(diagram, 4,4)
-        point_1.plot_lines()
-        point_1.plot_point()
-        point_2.plot_lines()
-        point_2.plot_point()
-        point_3.create()
-        prime_point_1.create()
-        self.wait(0.1)
-        self.play(FadeOut(point_1.everything))
-        self.wait(0.1)
-        self.play(FadeOut(point_2.everything))
-        self.wait(0.1)
-        self.play(FadeOut(point_3.everything))
-        self.wait(0.1)
-        self.play(FadeOut(prime_point_1.everything))
-        self.wait(0.1)
-        self.play(FadeOut(diagram.everything))
-        diagram.remove()
-        self.wait(0.1)
-        diagram2 = SpaceTimeGrid(self, .8)
-        diagram2.show()
+        diagram2.change_speed(0.1)
         self.wait(0.1)
