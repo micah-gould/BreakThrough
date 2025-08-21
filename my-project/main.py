@@ -133,8 +133,13 @@ class SpaceTimeGrid:
 
         new_text, new_things = self.extract_text(new_things, keep_length)
         old_text, old_things = self.extract_text(old_things, keep_length)
+        remove = [item for item in old_things if item not in new_things]
+        add = [item for item in new_things if item not in old_things]
 
-        self.scene.play(TransformMatchingShapes(VGroup(*old_text), VGroup(*new_text)), Transform(VGroup(*old_things), VGroup(*new_things)))
+
+        angle = np.arctan(self.speed) - np.arctan(new_speed)
+
+        self.scene.play(TransformMatchingShapes(VGroup(*old_text), VGroup(*new_text), path=angle), Transform(VGroup(*old_things), VGroup(*new_things)))
         self.remove()
         new_diagram.show()
         return
@@ -260,10 +265,69 @@ class PrimeLocation:
     def remove(self):  
         self.diagram.scene.remove(*self.everything)
         return
+    
+class alwaysUprightMathTex(MathTex):
+    def __init__(self, *tex_strings, arg_separator = " ", substrings_to_isolate = None, tex_to_color_map = None, tex_environment = "align*", **kwargs):
+        super().__init__(*tex_strings, arg_separator=arg_separator, substrings_to_isolate=substrings_to_isolate, tex_to_color_map=tex_to_color_map, tex_environment=tex_environment, **kwargs)
+        self.submobjects.append(Line([-0.1,0,0],[+0.1,0,0],stroke_width=0))
+        self.add_updater(self.updater, call_updater=True)
+
+    def updater(self, mobj):
+        self.rotate(-self.submobjects[-1].get_angle())
+
 
 class Scene1(Scene):
     def construct(self):
         diagram2 = SpaceTimeGrid(self, .3)
         self.wait(0.1)
         diagram2.change_speed(0.9)
-        self.wait(0.1)
+        self.wait()
+
+class SlantedNumberLine(Scene):
+    def construct(self):
+        a = ValueTracker(40)
+        sc = ValueTracker(10)
+
+        # Create the tip label once
+        tip_label = Text("Space (x)", font_size=36)
+
+        def make_number_line():
+            nl = NumberLine(
+                x_range=[-sc.get_value(), sc.get_value() + 1, 2],
+                length=10,
+                include_numbers=True,
+                include_tip=True,
+                exclude_origin_tick=True,
+                numbers_to_exclude=[0],
+            ).set_color(YELLOW).rotate(a.get_value() * DEGREES, about_point=ORIGIN)
+
+            # Vector along the line
+            tangent = nl.number_to_point(1) - nl.number_to_point(0)
+            tangent /= np.linalg.norm(tangent)
+            normal = rotate_vector(tangent, PI/2)
+
+            # Adjust numbers
+            for mob in nl.numbers:
+                num = mob.number
+                base_point = nl.number_to_point(num)
+                if num > 0:
+                    mob.move_to(base_point + 0.3 * normal)
+                elif num < 0:
+                    mob.move_to(base_point - 0.3 * normal)
+                mob.rotate(-a.get_value() * DEGREES, about_point=mob.get_center())
+
+            # Update tip label position (like a number)
+            tip_pos = nl.get_tip().get_center()
+            tip_label.move_to(tip_pos + 0.3 * normal)
+
+            return nl
+
+        nl = always_redraw(make_number_line)
+        self.add(nl, tip_label)
+
+        self.wait()
+        self.play(
+            a.animate.set_value(5),
+            sc.animate.set_value(4)
+        )
+        self.wait()
