@@ -109,37 +109,59 @@ class SpaceTimeGrid:
     def change_speed(self, new_speed):
         self.show()
         new_diagram = SpaceTimeGrid(self.scene, new_speed)
-        new_things = [*new_diagram.everything][3:]
-        old_things = [*self.everything][3:]
-        difference = int((len(new_things) - (len(old_things))) / 4)
+        new_things = list(new_diagram.everything)[3:]
+        old_things = list(self.everything)[3:]
+
+        difference = (len(new_things) - len(old_things)) // 4
+        keep_length = min((len(old_things) - 10) // 4, (len(new_things) - 10) // 4)
+
         if difference > 0:
-            keep_length = int((len(old_things) - 10) / 4)
-            first_half = new_things[:int(len(new_things)/2)]
-            del first_half[2:int(2 + difference / 2)]
-            del first_half[int(keep_length + 5):int(keep_length + 5 + difference)]
-            del first_half[-int(difference / 2):]
-            second_half = new_things[int(len(new_things)/2):]
-            del second_half[2:int(2 + difference / 2)]
-            del second_half[int(keep_length + 5):int(keep_length + 5 + difference)]
-            del second_half[-int(difference / 2):]
-            new_things = first_half + second_half
+            first_half, second_half = self.split_in_half(new_things)
         elif difference < 0:
             difference = -difference
-            keep_length = int((len(new_things) - 10) / 4)
-            first_half = old_things[:int(len(old_things)/2)]
-            del first_half[2:int(2 + difference / 2)]
-            del first_half[int(keep_length + 5):int(keep_length + 5 + difference)]
-            del first_half[-int(difference / 2):]
-            second_half = old_things[int(len(old_things)/2):]
-            del second_half[2:int(2 + difference / 2)]
-            del second_half[int(keep_length + 5):int(keep_length + 5 + difference)]
-            del second_half[-int(difference / 2):]
-            old_things = first_half + second_half
+            first_half, second_half = self.split_in_half(old_things)
+        else:
+            first_half, second_half = [], []
 
-        self.scene.play(TransformMatchingShapes(VGroup(*old_things), VGroup(*new_things)))
+        if difference != 0:
+            first_half, second_half = self.prune_halves(first_half, second_half, difference, keep_length)
+
+            if len(new_things) > len(old_things):
+                new_things = first_half + second_half
+            else:
+                old_things = first_half + second_half
+
+        new_text, new_things = self.extract_text(new_things, keep_length)
+        old_text, old_things = self.extract_text(old_things, keep_length)
+
+        self.scene.play(TransformMatchingShapes(VGroup(*old_text), VGroup(*new_text)), Transform(VGroup(*old_things), VGroup(*new_things)))
         self.remove()
         new_diagram.show()
         return
+    
+    def split_in_half(self, seq):
+        """Split a sequence into two halves."""
+        mid = len(seq) // 2
+        return seq[:mid], seq[mid:]
+
+    def prune_halves(self, first_half, second_half, difference, keep_length):
+        """Apply deletions to both halves."""
+        for half in (first_half, second_half):
+            del half[2 : 2 + difference // 2]
+            del half[keep_length + 5 : keep_length + 5 + difference]
+            del half[-(difference // 2) :]
+        return first_half, second_half
+
+    def extract_text(self,things, keep_length):
+        """Extract text elements while modifying the list in place."""
+        first_half, second_half = self.split_in_half(things)
+        text_first = [first_half.pop(1)] + [
+            first_half.pop(keep_length + 4) for _ in range(keep_length)
+        ]
+        text_second = [second_half.pop(1)] + [
+            second_half.pop(keep_length + 4) for _ in range(keep_length)
+        ]
+        return text_first + text_second, first_half + second_half
 
 class Location:
     def __init__(self, diagram, x, ct):
@@ -243,5 +265,5 @@ class Scene1(Scene):
     def construct(self):
         diagram2 = SpaceTimeGrid(self, .3)
         self.wait(0.1)
-        diagram2.change_speed(0.1)
+        diagram2.change_speed(0.9)
         self.wait(0.1)
