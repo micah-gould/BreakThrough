@@ -1,6 +1,6 @@
 from manim import *
 
-# TODO: Line is still small while it's moving
+# TODO: Fix number positions on the number line
 
 def round_up_to_even(n):
     return int(np.ceil(n / 2.0)) * 2
@@ -31,8 +31,8 @@ class SpaceTimeGrid:
         ct_label = Text("Time (ct)", font_size=36).scale(self.scale_factor)
 
         # Position the labels
-        x_label.next_to(self.grid.x_axis, RIGHT).shift(DOWN * 0.5 + LEFT)
-        ct_label.next_to(self.grid.y_axis, UP).shift(DOWN * 0.5 + LEFT)
+        x_label.next_to(self.grid.c2p(self.max_number, self.count), UP).shift(DOWN * (self.scale_factor + 0.1))
+        ct_label.next_to(self.grid.c2p(self.count, self.max_number), RIGHT).shift(LEFT * (self.scale_factor + 0.1))
         
         def make_number_line(flip=1):
 
@@ -74,11 +74,11 @@ class SpaceTimeGrid:
 
         self.x__line = always_redraw(lambda: make_number_line(1))
         
-        x__label = always_redraw(lambda: Text("Space (x')", font_size=36).move_to(self.grid.c2p(self.max_number, self.speed.get_value() * self.max_number + 0.5)).scale(self.scale_factor))
+        x__label = always_redraw(lambda: Text("Space (x')", font_size=36).move_to(self.grid.c2p(self.max_number, self.speed.get_value() * self.max_number + 1)).scale(self.scale_factor))
 
         self.ct__line = always_redraw(lambda: make_number_line(-1))
         
-        ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid.c2p(self.speed.get_value() * self.max_number + 2, self.max_number - 1)).scale(self.scale_factor))
+        ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid.c2p(self.speed.get_value() * self.max_number + 3, self.max_number - 0.5)).scale(self.scale_factor))
 
         # Group all elements
         self.everything = VGroup(self.grid, x_label, ct_label, self.x__line, x__label, self.ct__line, ct__label)
@@ -104,8 +104,8 @@ class SpaceTimeGrid:
         return tuple(map(lambda x, y: x + y, (new_x, self.speed.get_value() * new_x), (self.speed.get_value() * new_ct, new_ct)))
         # Return the new coordinates
     
-    def change_speed(self, new_speed):
-        self.scene.play(self.speed.animate.set_value(new_speed))
+    def change_speed(self, new_speed, **kwargs):
+        self.scene.play(self.speed.animate(**kwargs).set_value(new_speed))
         return
 
 class Location:
