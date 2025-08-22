@@ -15,15 +15,15 @@ class SpaceTimeGrid:
         self.scene = scene
         self.speed = ValueTracker(v)
 
-        self.scale = 24
+        self.scale_factor = 24
         self.count = 2
 
         self.grid = Axes(
-            x_range=[-self.scale, self.scale, self.count],
-            y_range=[-self.scale, self.scale, self.count],
-            x_length=self.scale,  # Enlarged so it looks good after scaling
-            y_length=self.scale,
-            axis_config={"include_numbers": True, "stroke_width": 32 / self.scale},
+            x_range=[-self.scale_factor, self.scale_factor, self.count],
+            y_range=[-self.scale_factor, self.scale_factor, self.count],
+            x_length=self.scale_factor,  # Enlarged so it looks good after scaling
+            y_length=self.scale_factor,
+            axis_config={"include_numbers": True, "stroke_width": 32 / self.scale_factor},
         )
 
         # Label the axes
@@ -37,42 +37,54 @@ class SpaceTimeGrid:
         def make_number_line(flip=1):
 
             angle = np.arctan(self.speed.get_value()) if flip == -1 else PI/2 - np.arctan(self.speed.get_value())
+            speed = self.speed.get_value()
 
-            nl = NumberLine(
-                x_range=[round_up_to_even(-self.scale * (1 - self.speed.get_value()**2)**(1/2)), round_down_to_even(self.scale * (1 - self.speed.get_value()**2)**(1/2)), 2],
-                length=np.linalg.norm(self.grid.coords_to_point(-self.scale, -self.speed.get_value() * self.scale) - self.grid.coords_to_point(self.scale, self.speed.get_value() * self.scale)),
-                include_numbers=True,
-                include_tip=True,
-                exclude_origin_tick=True,
-                numbers_to_exclude=list(range(-3, 4)),
-                color=YELLOW,
-                stroke_width = 32 / self.scale
-            ).rotate(angle, about_point=ORIGIN)
+            if abs(speed) <= 0.99:
+                nl = NumberLine(
+                    x_range=[round_up_to_even(-self.scale_factor * (1 - speed**2)**(1/2)), round_down_to_even(self.scale_factor * (1 - speed**2)**(1/2)), 2],
+                    length=np.linalg.norm(self.grid.coords_to_point(-self.scale_factor, -speed * self.scale_factor) - self.grid.coords_to_point(self.scale_factor, speed * self.scale_factor)),
+                    include_numbers=True,
+                    include_tip=True,
+                    exclude_origin_tick=True,
+                    numbers_to_exclude=list(range(-3, 4)),
+                    color=YELLOW,
+                    stroke_width = 32 / self.scale_factor
+                ).rotate(angle, about_point=ORIGIN).move_to(ORIGIN)
 
-            tangent = nl.number_to_point(1) - nl.number_to_point(0)
-            tangent /= np.linalg.norm(tangent)
-            normal = rotate_vector(tangent, PI / 2) * flip
-            for mob in nl.numbers:
-                num = mob.number
-                base_point = nl.number_to_point(num)
-                mob.move_to((base_point + 0.3 * normal) if num > 0 else (base_point - 0.3 * normal))
-                mob.rotate(-angle, about_point=mob.get_center())
+                tangent = nl.number_to_point(1) - nl.number_to_point(0)
+                tangent /= np.linalg.norm(tangent)
+                normal = rotate_vector(tangent, PI / 2) * flip
+                for mob in nl.numbers:
+                    num = mob.number
+                    base_point = nl.number_to_point(num)
+                    mob.move_to((base_point + 0.3 * normal) if num > 0 else (base_point - 0.3 * normal))
+                    mob.rotate(-angle, about_point=mob.get_center())
+            else:
+                nl = NumberLine(
+                    x_range=[-1, 1, 1],
+                    length=np.linalg.norm(self.grid.coords_to_point(-self.scale_factor, -self.scale_factor) - self.grid.coords_to_point(self.scale_factor, self.scale_factor)),
+                    include_numbers=False,
+                    include_tip=True,
+                    exclude_origin_tick=True,
+                    color=YELLOW,
+                    stroke_width = 32 / self.scale_factor
+                ).rotate(angle, about_point=ORIGIN).move_to(ORIGIN)
 
             # Adjust the position of the tip
             return nl
 
         x__line = always_redraw(lambda: make_number_line(1))
         
-        x__label = always_redraw(lambda: Text("Space (x')", font_size=36).move_to(self.grid.coords_to_point(self.scale, self.speed.get_value() * self.scale + 0.5)))
+        x__label = always_redraw(lambda: Text("Space (x')", font_size=36).move_to(self.grid.coords_to_point(self.scale_factor, self.speed.get_value() * self.scale_factor + 0.5)))
 
         ct__line = always_redraw(lambda: make_number_line(-1))
         
-        ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid.coords_to_point(self.speed.get_value() * self.scale + 2, self.scale - 1)))
+        ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid.coords_to_point(self.speed.get_value() * self.scale_factor + 2, self.scale_factor - 1)))
 
         # Group all elements
         self.everything = VGroup(self.grid, x_label, ct_label, x__line, x__label, ct__line, ct__label)
         self.everything.scale(.3)
-        # self.everything.move_to(ORIGIN)
+        self.everything.move_to(ORIGIN)
         return
     
     def show(self):
