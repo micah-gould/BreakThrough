@@ -33,15 +33,15 @@ class Testing(Scene):
                     stroke_width = 32 / 24
                 ).rotate(b.get_value(), about_point=ORIGIN).scale(0.3).move_to(ORIGIN)
 
-            tangent = nl.number_to_point(1) - nl.number_to_point(0)
+            tangent = nl.n2p(1) - nl.n2p(0)
             tangent /= np.linalg.norm(tangent)
             normal = rotate_vector(tangent, PI / 2)
             for mob in nl.numbers:
                 num = mob.number
-                base_point = nl.number_to_point(num)
+                base_point = nl.n2p(num)
                 mob.move_to((base_point + 0.09 * normal) if num > 0 else (base_point - 0.09 * normal))
                 mob.rotate(-b.get_value(), about_point=mob.get_center())
-
+            nl.shift(grid.c2p(0, 0) - nl.n2p(0))
             return nl
 
         nl = always_redraw(draw_number_line) 

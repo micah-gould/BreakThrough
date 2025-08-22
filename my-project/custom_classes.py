@@ -1,7 +1,6 @@
 from manim import *
 
-#TODO: Figure out why it jumps around when the speed is changed
-
+# TODO: Line is still small while it's moving
 
 def round_up_to_even(n):
     return int(np.ceil(n / 2.0)) * 2
@@ -15,20 +14,21 @@ class SpaceTimeGrid:
         self.scene = scene
         self.speed = ValueTracker(v)
 
-        self.scale_factor = 24
+        self.max_number = 24
         self.count = 2
+        self.scale_factor = 0.3
 
         self.grid = Axes(
-            x_range=[-self.scale_factor, self.scale_factor, self.count],
-            y_range=[-self.scale_factor, self.scale_factor, self.count],
-            x_length=self.scale_factor,  # Enlarged so it looks good after scaling
-            y_length=self.scale_factor,
-            axis_config={"include_numbers": True, "stroke_width": 32 / self.scale_factor},
-        )
+            x_range=[-self.max_number, self.max_number, self.count],
+            y_range=[-self.max_number, self.max_number, self.count],
+            x_length=self.max_number,  # Enlarged so it looks good after scaling
+            y_length=self.max_number,
+            axis_config={"include_numbers": True, "stroke_width": 32 / self.max_number},
+        ).scale(self.scale_factor).move_to(ORIGIN)
 
         # Label the axes
-        x_label = Text("Space (x)", font_size=36)  # Larger to compensate for scaling
-        ct_label = Text("Time (ct)", font_size=36)
+        x_label = Text("Space (x)", font_size=36).scale(self.scale_factor)  # Larger to compensate for scaling
+        ct_label = Text("Time (ct)", font_size=36).scale(self.scale_factor)
 
         # Position the labels
         x_label.next_to(self.grid.x_axis, RIGHT).shift(DOWN * 0.5 + LEFT)
@@ -41,50 +41,48 @@ class SpaceTimeGrid:
 
             if abs(speed) <= 0.99:
                 nl = NumberLine(
-                    x_range=[round_up_to_even(-self.scale_factor * (1 - speed**2)**(1/2)), round_down_to_even(self.scale_factor * (1 - speed**2)**(1/2)), 2],
-                    length=np.linalg.norm(self.grid.coords_to_point(-self.scale_factor, -speed * self.scale_factor) - self.grid.coords_to_point(self.scale_factor, speed * self.scale_factor)),
+                    x_range=[round_up_to_even(-self.max_number * (1 - speed**2)**(1/2)), round_down_to_even(self.max_number * (1 - speed**2)**(1/2)), 2],
+                    length=np.linalg.norm(self.grid.c2p(-self.max_number, -speed * self.max_number) - self.grid.c2p(self.max_number, speed * self.max_number)) / self.scale_factor,
                     include_numbers=True,
                     include_tip=True,
                     exclude_origin_tick=True,
                     numbers_to_exclude=list(range(-3, 4)),
                     color=YELLOW,
-                    stroke_width = 32 / self.scale_factor
-                ).rotate(angle, about_point=ORIGIN).move_to(ORIGIN)
+                    stroke_width = 32 / self.max_number
+                )
 
-                tangent = nl.number_to_point(1) - nl.number_to_point(0)
+                tangent = nl.n2p(1) - nl.n2p(0)
                 tangent /= np.linalg.norm(tangent)
                 normal = rotate_vector(tangent, PI / 2) * flip
                 for mob in nl.numbers:
                     num = mob.number
-                    base_point = nl.number_to_point(num)
-                    mob.move_to((base_point + 0.3 * normal) if num > 0 else (base_point - 0.3 * normal))
+                    base_point = nl.n2p(num)
+                    mob.move_to((base_point + 0.09 * normal) if num > 0 else (base_point - 0.09 * normal))
                     mob.rotate(-angle, about_point=mob.get_center())
             else:
                 nl = NumberLine(
                     x_range=[-1, 1, 1],
-                    length=np.linalg.norm(self.grid.coords_to_point(-self.scale_factor, -self.scale_factor) - self.grid.coords_to_point(self.scale_factor, self.scale_factor)),
+                    length=np.linalg.norm(self.grid.c2p(-self.max_number, -self.max_number) - self.grid.c2p(self.max_number, self.max_number)) / self.scale_factor,
                     include_numbers=False,
                     include_tip=True,
                     exclude_origin_tick=True,
                     color=YELLOW,
-                    stroke_width = 32 / self.scale_factor
-                ).rotate(angle, about_point=ORIGIN).move_to(ORIGIN)
-
-            # Adjust the position of the tip
+                    stroke_width = 32 / self.max_number
+                )
+            nl.rotate(angle, about_point=ORIGIN).scale(self.scale_factor).shift(self.grid.c2p(0, 0) - nl.n2p(0))
             return nl
 
-        x__line = always_redraw(lambda: make_number_line(1))
+        self.x__line = always_redraw(lambda: make_number_line(1))
         
-        x__label = always_redraw(lambda: Text("Space (x')", font_size=36).move_to(self.grid.coords_to_point(self.scale_factor, self.speed.get_value() * self.scale_factor + 0.5)))
+        x__label = always_redraw(lambda: Text("Space (x')", font_size=36).move_to(self.grid.c2p(self.max_number, self.speed.get_value() * self.max_number + 0.5)).scale(self.scale_factor))
 
-        ct__line = always_redraw(lambda: make_number_line(-1))
+        self.ct__line = always_redraw(lambda: make_number_line(-1))
         
-        ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid.coords_to_point(self.speed.get_value() * self.scale_factor + 2, self.scale_factor - 1)))
+        ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid.c2p(self.speed.get_value() * self.max_number + 2, self.max_number - 1)).scale(self.scale_factor))
 
         # Group all elements
-        self.everything = VGroup(self.grid, x_label, ct_label, x__line, x__label, ct__line, ct__label)
-        self.everything.scale(.3)
-        self.everything.move_to(ORIGIN)
+        self.everything = VGroup(self.grid, x_label, ct_label, self.x__line, x__label, self.ct__line, ct__label)
+
         return
     
     def show(self):
@@ -122,8 +120,8 @@ class Location:
 
     def plot_lines(self):
         # Create the lines
-        x_line = Line(self.diagram.grid.coords_to_point(self.x, 0), self.diagram.grid.coords_to_point(self.x, self.ct), stroke_width=1)
-        ct_line = Line(self.diagram.grid.coords_to_point(0, self.ct), self.diagram.grid.coords_to_point(self.x, self.ct), stroke_width=1)
+        x_line = Line(self.diagram.grid.c2p(self.x, 0), self.diagram.grid.c2p(self.x, self.ct), stroke_width=1)
+        ct_line = Line(self.diagram.grid.c2p(0, self.ct), self.diagram.grid.c2p(self.x, self.ct), stroke_width=1)
         self.everything.add(x_line, ct_line)
         self.diagram.scene.play(Create(x_line), Create(ct_line))
         self.diagram.scene.wait(0.1)
@@ -131,7 +129,7 @@ class Location:
 
     def plot_point(self):
         # Create the point
-        point = Dot(self.diagram.grid.coords_to_point(self.x, self.ct), color=RED, radius=0.04)
+        point = Dot(self.diagram.grid.c2p(self.x, self.ct), color=RED, radius=0.04)
         self.everything.add(point)
         self.diagram.scene.play(Create(point))
         self.diagram.scene.wait(0.1)
@@ -139,8 +137,8 @@ class Location:
 
     def plot__lines(self):
         # Create the lines 
-        x__line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(self._x, 0)), color=YELLOW, stroke_width=0.5)
-        ct__line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(0, self._ct)), color=YELLOW, stroke_width=0.5)
+        x__line = Line(self.diagram.grid.c2p(self.x, self.ct), self.diagram.grid.c2p(*self.diagram.prime_to_cords(self._x, 0)), color=YELLOW, stroke_width=0.5)
+        ct__line = Line(self.diagram.grid.c2p(self.x, self.ct), self.diagram.grid.c2p(*self.diagram.prime_to_cords(0, self._ct)), color=YELLOW, stroke_width=0.5)
         self.everything.add(x__line, ct__line)
         self.diagram.scene.play(Create(x__line), Create(ct__line))
         self.diagram.scene.wait(0.1)
@@ -171,8 +169,8 @@ class PrimeLocation:
 
     def plot__lines(self):
         # Create the lines
-        x__line = Line(self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(self._x, 0)), self.diagram.grid.coords_to_point(self.x, self.ct), color=YELLOW, stroke_width=0.5)
-        ct__line = Line(self.diagram.grid.coords_to_point(*self.diagram.prime_to_cords(0, self._ct)), self.diagram.grid.coords_to_point(self.x, self.ct), color=YELLOW, stroke_width=0.5)
+        x__line = Line(self.diagram.grid.c2p(*self.diagram.prime_to_cords(self._x, 0)), self.diagram.grid.c2p(self.x, self.ct), color=YELLOW, stroke_width=0.5)
+        ct__line = Line(self.diagram.grid.c2p(*self.diagram.prime_to_cords(0, self._ct)), self.diagram.grid.c2p(self.x, self.ct), color=YELLOW, stroke_width=0.5)
         self.everything.add(x__line, ct__line)
         self.diagram.scene.play(Create(x__line), Create(ct__line))
         self.diagram.scene.wait(0.1)
@@ -180,7 +178,7 @@ class PrimeLocation:
 
     def plot_point(self):
         # Create the point
-        point = Dot(self.diagram.grid.coords_to_point(self.x, self.ct), color=RED, radius=0.04)
+        point = Dot(self.diagram.grid.c2p(self.x, self.ct), color=RED, radius=0.04)
         self.everything.add(point)
         self.diagram.scene.play(Create(point))
         self.diagram.scene.wait(0.1)
@@ -188,8 +186,8 @@ class PrimeLocation:
 
     def plot_lines(self):
         # Create the lines
-        x_line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(self.x, 0), stroke_width=1)
-        ct_line = Line(self.diagram.grid.coords_to_point(self.x, self.ct), self.diagram.grid.coords_to_point(0, self.ct), stroke_width=1)
+        x_line = Line(self.diagram.grid.c2p(self.x, self.ct), self.diagram.grid.c2p(self.x, 0), stroke_width=1)
+        ct_line = Line(self.diagram.grid.c2p(self.x, self.ct), self.diagram.grid.c2p(0, self.ct), stroke_width=1)
         self.everything.add(x_line, ct_line)
         self.diagram.scene.play(Create(x_line), Create(ct_line))
         self.diagram.scene.wait(0.1)
