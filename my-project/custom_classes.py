@@ -1,5 +1,6 @@
 from manim import *
 
+#TODO: FIXME: have the grid hidden when speed is 0, and appear when speed is nonzero
 class SpaceTimeGrid:
     def __init__(self, scene, speed=0, max_number=24, count=2):
         # Create the coordinate system
@@ -72,17 +73,19 @@ class SpaceTimeGrid:
         
         ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid @ ((self.speed.get_value() + 1/8) * self.max_number, self.max_number * 47/48)).scale(self.scale_factor))
 
-        # Group all elements
-        self.everything = VGroup(self.grid, x_label, ct_label, self.x__line, x__label, self.ct__line, ct__label)
+        self.moving_object = VGroup(self.x__line, self.ct__line, x__label, ct__label)
+        self.observer = VGroup(self.grid, x_label, ct_label)
 
         return
     
     def show(self):
-        self.scene.add(self.everything)
+        everything = self.observer if self.speed.get_value() == 0 else VGroup(*self.observer, *self.moving_object)
+        self.scene.add(everything)
         return
 
     def create(self, **kwargs):
-        self.scene.play(Create(self.everything), **kwargs)
+        everything = self.observer if self.speed.get_value() == 0 else VGroup(*self.observer, *self.moving_object)
+        self.scene.play(Create(everything), **kwargs)
         return
 
     def remove(self):
@@ -99,6 +102,10 @@ class SpaceTimeGrid:
     
     def change_speed(self, new_speed, **kwargs):
         self.scene.play(self.speed.animate(**kwargs).set_value(new_speed))
+        return
+    
+    def set_speed(self, new_speed):
+        self.speed.set_value(new_speed)
         return
 
 class Location:
@@ -241,6 +248,5 @@ class PrimeLocation:
         return
     
     def move_to(self, x, ct, **kwargs):
-        (temp_x, temp_ct) = self.diagram.prime_to_cords(x, ct)
-        self.diagram.scene.play(self._x.animate(**kwargs).set_value(x), self._ct.animate(**kwargs).set_value(ct), self.x.animate(**kwargs).set_value(temp_x), self.ct.animate(**kwargs).set_value(temp_ct))
+        self.diagram.scene.play(self._x.animate(**kwargs).set_value(x), self._ct.animate(**kwargs).set_value(ct))
         return
