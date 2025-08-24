@@ -8,11 +8,7 @@ class Scene1(Scene):
         location.create()
         location2 = PrimeLocation(diagram=diagram, x=2, ct=2)
         location2.create()
-        print(diagram.x__line.x_range, location.diagram.x__line.x_range)
-        print(diagram.speed.get_value(), location.diagram.speed.get_value())
-        diagram.change_speed(new_speed=0.2, run_time=1)
-        print(diagram.x__line.x_range, location.diagram.x__line.x_range)
-        print(diagram.speed.get_value(), location.diagram.speed.get_value())
+        diagram.change_speed(new_speed=0.6)
         self.wait()
         return
 

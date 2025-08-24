@@ -1,11 +1,5 @@
 from manim import *
 
-def round_up_to_even(n):
-    return int(np.ceil(n / 2.0)) * 2
-
-def round_down_to_even(n):
-    return int(np.floor(n / 2.0)) * 2
-
 class SpaceTimeGrid:
     def __init__(self, scene, speed=0, max_number=24, count=2):
         # Create the coordinate system
@@ -39,7 +33,7 @@ class SpaceTimeGrid:
 
             if abs(speed) <= 0.99:
                 nl = NumberLine(
-                    x_range=[round_up_to_even(-self.max_number * (1 - speed**2)**(1/2)), round_down_to_even(self.max_number * (1 - speed**2)**(1/2)), self.count],
+                    x_range=[-self.max_number * (1 - speed**2)**(1/2), self.max_number * (1 - speed**2)**(1/2), self.count],
                     length=np.linalg.norm(self.grid @ (-self.max_number, -speed * self.max_number) - self.grid @ (self.max_number, speed * self.max_number)) / self.scale_factor,
                     include_numbers=True,
                     include_tip=True,
@@ -99,7 +93,8 @@ class SpaceTimeGrid:
         # Convert the coordinates to the new system
         new_x = (x / (1 - self.speed.get_value()**2)**(1/2))
         new_ct = (ct / (1 - self.speed.get_value()**2)**(1/2))
-        return tuple(map(lambda x, y: x + y, (new_x, self.speed.get_value() * new_x), (self.speed.get_value() * new_ct, new_ct)))
+        a = tuple(map(lambda x, y: x + y, (new_x, self.speed.get_value() * new_x), (self.speed.get_value() * new_ct, new_ct)))
+        return a
         # Return the new coordinates
     
     def change_speed(self, new_speed, **kwargs):
@@ -114,8 +109,12 @@ class Location:
         self.everything = VGroup()
         return
     
-    def _x(self, x, ct): return (x - self.diagram.speed.get_value() * ct) / (1 - self.diagram.speed.get_value()**2)**(1/2)
-    def _ct(self, x, ct): return (ct - self.diagram.speed.get_value() * x) / (1 - self.diagram.speed.get_value()**2)**(1/2)
+    def _x(self, x, ct): 
+        a = (x - self.diagram.speed.get_value() * ct) / (1 - self.diagram.speed.get_value()**2)**(1/2)
+        return a
+    def _ct(self, x, ct): 
+        a = (ct - self.diagram.speed.get_value() * x) / (1 - self.diagram.speed.get_value()**2)**(1/2)
+        return a
 
     def plot_lines(self, **kwargs):
         # Create the lines
@@ -143,10 +142,10 @@ class Location:
     def plot__lines(self, **kwargs):
         # Create the lines 
         x__line = always_redraw(
-            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.x__line @ self._x(self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
+            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ self.diagram.prime_to_cords(self._x(self.x.get_value(), self.ct.get_value()), 0), color=YELLOW, stroke_width=0.5)
         )
         ct__line = always_redraw(
-            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.ct__line @ self._ct(self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
+            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ self.diagram.prime_to_cords(0, self._ct(self.x.get_value(), self.ct.get_value())), color=YELLOW, stroke_width=0.5)
         )
         self.everything.add(x__line, ct__line)
         self.diagram.scene.play(Create(x__line), Create(ct__line), **kwargs)
@@ -175,18 +174,30 @@ class PrimeLocation:
         self._x = ValueTracker(x)
         self._ct = ValueTracker(ct)   
         self.diagram = diagram
-        (temp_x, temp_ct) = diagram.prime_to_cords(x, ct)
-        self.x, self.ct = ValueTracker(temp_x), ValueTracker(temp_ct)
+        self.x = ValueTracker()
+        self.ct = ValueTracker()
+
+        def update_outputs(_):
+            _x = self._x.get_value()
+            _ct = self._ct.get_value()
+            (x, ct) = self.diagram.prime_to_cords(_x, _ct)
+            self.x.set_value(x)
+            self.ct.set_value(ct)
+
+        dummy = Mobject()
+        dummy.add_updater(update_outputs)
+        self.diagram.scene.add(dummy)
+        
         self.everything = VGroup()
         return
 
     def plot__lines(self, **kwargs):
         # Create the lines
         x__line = always_redraw(
-            lambda: Line(self.diagram.ct__line @ self._ct.get_value(), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
+            lambda: Line(self.diagram.grid @ self.diagram.prime_to_cords(self._x.get_value(), 0), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
         )
         ct__line = always_redraw(
-            lambda: Line(self.diagram.x__line @ self._x.get_value(), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
+            lambda: Line(self.diagram.grid @ self.diagram.prime_to_cords(0, self._ct.get_value()), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
         )
         self.everything.add(x__line, ct__line)
         self.diagram.scene.play(Create(x__line), Create(ct__line), **kwargs)
