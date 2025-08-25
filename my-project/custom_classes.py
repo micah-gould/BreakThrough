@@ -20,17 +20,19 @@ class SpaceTimeGrid:
         ).scale(self.scale_factor).move_to(ORIGIN)
 
         # Label the axes
-        x_label = Text("Space (x)", font_size=36).scale(self.scale_factor)  # Larger to compensate for scaling
-        ct_label = Text("Time (ct)", font_size=36).scale(self.scale_factor)
+        self.x_label = Text("Space (x)", font_size=36).scale(self.scale_factor)  # Larger to compensate for scaling
+        self.ct_label = Text("Time (ct)", font_size=36).scale(self.scale_factor)
 
         # Position the labels
-        x_label.next_to(self.grid @ (self.max_number, self.max_number / 12), UP).shift(DOWN * (self.scale_factor + 0.1))
-        ct_label.next_to(self.grid @ (self.max_number / 12, self.max_number), RIGHT).shift(LEFT * (self.scale_factor + 0.1))
+        self.x_label.next_to(self.grid @ (self.max_number, self.max_number / 12), UP).shift(DOWN * (self.scale_factor + 0.1))
+        self.ct_label.next_to(self.grid @ (self.max_number / 12, self.max_number), RIGHT).shift(LEFT * (self.scale_factor + 0.1))
         
         def make_number_line(flip=1):
 
             angle = np.arctan(self.speed.get_value()) if flip == -1 else PI/2 - np.arctan(self.speed.get_value())
             speed = self.speed.get_value()
+
+            if speed == 0: return VMobject()
 
             if abs(speed) <= 0.99:
                 nl = NumberLine(
@@ -67,25 +69,24 @@ class SpaceTimeGrid:
 
         self.x__line = always_redraw(lambda: make_number_line(1))
         
-        x__label = always_redraw(lambda: Text("Space (x')", font_size=36).move_to(self.grid @ (self.max_number, (self.speed.get_value() + 1/24) * self.max_number)).scale(self.scale_factor))
+        self.x__label = always_redraw(lambda: Text("Space (x')" if self.speed.get_value() != 0 else "", font_size=36).move_to(self.grid @ (self.max_number, (self.speed.get_value() + 1/24) * self.max_number)).scale(self.scale_factor))
 
         self.ct__line = always_redraw(lambda: make_number_line(-1))
         
-        ct__label = always_redraw(lambda: Text("Time (ct')", font_size=36).move_to(self.grid @ ((self.speed.get_value() + 1/8) * self.max_number, self.max_number * 47/48)).scale(self.scale_factor))
+        self.ct__label = always_redraw(lambda: Text("Time (ct')" if self.speed.get_value() != 0 else "", font_size=36).move_to(self.grid @ ((self.speed.get_value() + 1/8) * self.max_number, self.max_number * 47/48)).scale(self.scale_factor))
 
-        self.moving_object = VGroup(self.x__line, self.ct__line, x__label, ct__label)
-        self.observer = VGroup(self.grid, x_label, ct_label)
+        self.moveing_object = VGroup(self.x__line, self.ct__line, self.x__label, self.ct__label)
+        self.observer = VGroup(self.grid, self.x_label, self.ct_label)
+        self.everything = VGroup(*self.observer, *self.moveing_object)
 
         return
     
-    def show(self):
-        everything = self.observer if self.speed.get_value() == 0 else VGroup(*self.observer, *self.moving_object)
-        self.scene.add(everything)
+    def show(self, observer=True, moving_object=True):
+        self.scene.add(self.observer if observer else VGroup(), self.moveing_object if moving_object else VGroup())
         return
 
-    def create(self, **kwargs):
-        everything = self.observer if self.speed.get_value() == 0 else VGroup(*self.observer, *self.moving_object)
-        self.scene.play(Create(everything), **kwargs)
+    def create(self, observer=True, moving_object=True, **kwargs):
+        self.scene.play(Create(self.oberser if observer else VGroup()), Create(self.moveing_object if moving_object else VGroup()), **kwargs)
         return
 
     def remove(self):
@@ -106,6 +107,7 @@ class SpaceTimeGrid:
     
     def set_speed(self, new_speed):
         self.speed.set_value(new_speed)
+        self.scene.play(self.speed.animate(run_time=1/60).set_value(new_speed))
         return
 
 class Location:
