@@ -1,6 +1,5 @@
 from manim import *
 
-#TODO: FIXME: have the grid hidden when speed is 0, and appear when speed is nonzero
 class SpaceTimeGrid:
     def __init__(self, scene, speed=0, max_number=24, count=2):
         # Create the coordinate system
