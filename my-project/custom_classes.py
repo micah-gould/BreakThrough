@@ -85,7 +85,7 @@ class SpaceTimeGrid:
         return
 
     def create(self, observer=True, moving_object=True, **kwargs):
-        self.scene.play(Create(self.oberser if observer else VGroup()), Create(self.moveing_object if moving_object else VGroup()), **kwargs)
+        self.scene.play(Create(self.observer if observer else VGroup()), Create(self.moveing_object if moving_object else VGroup()), **kwargs)
         return
 
     def remove(self):
@@ -250,4 +250,26 @@ class PrimeLocation:
     
     def move_to(self, x, ct, **kwargs):
         self.diagram.scene.play(self._x.animate(**kwargs).set_value(x), self._ct.animate(**kwargs).set_value(ct))
+        return
+    
+class WorldLine:
+    def __init__(self, diagarm, speed=1, color=YELLOW):
+        self.diagram = diagarm
+        self.speed = speed
+        self.color = color
+        self.angle = np.arctan(speed)
+        return
+    
+    def draw(self):
+        self.line_head = Dot(self.diagram.grid @ (0, 0), color=self.color).scale(0.5)
+        self.line = always_redraw(lambda: Line(self.line_head.get_center(), self.diagram.grid @ (0, 0), color=self.color, stroke_width=2)).scale(0.5)
+        
+        self.diagram.scene.play(Create(self.line_head), Create(self.line))
+        self.wait()
+        self.diagram.scene.play(self.line_head.animate.move_to(self.diagram.grid @ ((self.diagram.max_number - self.diagram.count) * self.angle, self.diagram.max_number - self.diagram.count)))
+        return
+    
+    def draw_angle(self):
+        self.angle = Angle(self.diagram.grid.get_y_axis(), self.line, quadrant=(1, -1), radius=np.linalg.norm(self.diagram.grid @ (0, 3 * self.diagram.count) - self.diagram.grid @ (0, 0)), other_angle=True)
+        self.diagram.scene.play(Create(self.angle))
         return

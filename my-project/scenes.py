@@ -3,7 +3,7 @@ from custom_classes import *
 
 # TODO: Add subtitles later
 
-class ExplainTheDiagram(Scene):
+class ExplainTheDiagram(Scene): # Done
     def construct(self):
         first_train_x = NumberLine(x_range=[-1, 1, 1], length=4, color=BLUE, exclude_origin_tick=True, tip_shape=StealthTip, include_tip=True).shift(UP)
 
@@ -98,7 +98,65 @@ class TwoTrains(Scene):
         # TODO: add more?
 
         return 
-
-class Testing(Scene):
+    
+class GalilainEquations(Scene): # Done
     def construct(self):
+        x = MathTex('{{x\'}} = {{x}} - {{v}}{{t}}')
+        t = MathTex('{{t\'}} = {{t}}')
+        v = MathTex('{{u\'}} = {{u}} - {{v}}')
+        equations = VGroup(x, t, v).arrange(DOWN, aligned_edge=LEFT).scale(1.2)
+
+        prime_color = PURPLE
+        var_color = BLUE
+        v_color = RED
+
+        for eq in equations:
+            for sym in ["x", "t", "u"]:
+                eq.set_color_by_tex(sym, var_color)
+
+            eq.set_color_by_tex("'", prime_color)
+
+            eq.set_color_by_tex("v", v_color)
+
+        legend_left = VGroup(
+            MathTex("x, t, u").set_color(var_color),
+            MathTex("v").set_color(v_color),
+            MathTex("x', t', u'").set_color(prime_color),
+        )
+
+        legend_right = VGroup(
+            Tex("variables in the observer frame (position, time, velocity)"),
+            Tex("relative velocity between frames"),
+            Tex("variables in the moving frame (position, time, velocity)"),
+        )
+
+        legend = VGroup(
+            VGroup(legend_left[0], legend_right[0]).arrange(RIGHT, buff=0.3, aligned_edge=DOWN),
+            VGroup(legend_left[1], legend_right[1]).arrange(RIGHT, buff=0.3, aligned_edge=DOWN),
+            VGroup(legend_left[2], legend_right[2]).arrange(RIGHT, buff=0.3, aligned_edge=DOWN),
+        ).arrange(DOWN, aligned_edge=LEFT).scale(0.8)
+
+        legend.to_edge(UP)
+        equations.next_to(legend, DOWN, buff=1)
+
+        self.play(FadeIn(legend, shift=DOWN))
+        self.play(Write(x), Write(t), Write(v))
+        self.wait()
+        return
+
+class ExplainRelitivisticDiagrams(Scene):
+    def construct(self):
+        diagram = SpaceTimeGrid(self, speed=0)
+
+        diagram.create(run_time=2)
+        self.wait()
+
+        line = WorldLine(diagram, speed=0.2)
+        
+        line.draw()
+        self.wait()
+
+        line.draw_angle()
+        self.wait()
+
         return
