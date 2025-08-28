@@ -144,6 +144,16 @@ class GalilainEquations(Scene): # Done
         self.wait()
         return
 
+class LightClockExplenation(Scene):
+    def construct(self):
+        clock1 = LightClock(self)
+
+        clock1.start()
+
+        # TODO: Finish
+
+        return
+
 class ExplainRelitivisticDiagrams(Scene):
     def construct(self):
         diagram = SpaceTimeGrid(self, speed=0)

@@ -273,3 +273,41 @@ class WorldLine:
         self.angle = Angle(self.diagram.grid.get_y_axis(), self.line, quadrant=(1, -1), radius=np.linalg.norm(self.diagram.grid @ (0, 3 * self.diagram.count) - self.diagram.grid @ (0, 0)), other_angle=True)
         self.diagram.scene.play(Create(self.angle))
         return
+    
+class LightClock:
+    def __init__(self, scene):
+        self.scene = scene
+
+        self.case = NumberLine(x_range=[-1, 1, 1], exclude_origin_tick=True, length=1).rotate(90*DEGREES, about_point=ORIGIN)
+
+        scene.play(Create(self.case))
+        scene.wait()
+        
+        self.ball = Dot(radius=np.linalg.norm(self.case @ (0) - self.case @ (0.1)), color=TEAL_A)
+        scene.play(GrowFromCenter(self.ball))
+        scene.wait()
+
+        self.ball.start_direction = 1 # 1 is up
+    
+    def start(self):
+        self.ball.start_time = self.scene.time
+        self.ball.start_pos = self.case.p2n(self.ball.get_center())
+        self.ball.add_updater(self.linear_bounce_updater)
+        return
+
+    def linear_bounce_updater(self, mob, dt):
+            t = self.scene.time - mob.start_time
+            period = 2     # total time for left -> right -> left
+            offset = mob.start_pos + 1 if mob.start_direction == 1 else 3 - mob.start_pos
+            frac = ((t + period * offset / 4) % period) / period
+            if frac < 0.5:
+                x = -0.9 + 3.6 * frac
+                mob.end_direction = 1
+            else:
+                x = 0.9 - 3.6 * (frac - 0.5)
+                mob.end_direction = -1
+            mob.move_to(self.case @ x)
+    
+    def stop(self):
+        self.ball.remove_updater(self.linear_bounce_updater)
+        self.ball.start_direction = self.ball.end_direction
