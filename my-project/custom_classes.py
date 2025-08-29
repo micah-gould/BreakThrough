@@ -77,37 +77,29 @@ class SpaceTimeGrid:
         self.moveing_object = VGroup(self.x__line, self.ct__line, self.x__label, self.ct__label)
         self.observer = VGroup(self.grid, self.x_label, self.ct_label)
         self.everything = VGroup(*self.observer, *self.moveing_object)
-
-        return
     
     def show(self, observer=True, moving_object=True):
         self.scene.add(self.observer if observer else VGroup(), self.moveing_object if moving_object else VGroup())
-        return
 
     def create(self, observer=True, moving_object=True, **kwargs):
         self.scene.play(Create(self.observer if observer else VGroup()), Create(self.moveing_object if moving_object else VGroup()), **kwargs)
-        return
 
     def remove(self):
         self.scene.clear()
-        return
     
     def prime_to_cords(self, x, ct):
         # Convert the coordinates to the new system
         new_x = (x / (1 - self.speed.get_value()**2)**(1/2))
         new_ct = (ct / (1 - self.speed.get_value()**2)**(1/2))
-        a = tuple(map(lambda x, y: x + y, (new_x, self.speed.get_value() * new_x), (self.speed.get_value() * new_ct, new_ct)))
-        return a
+        return tuple(map(lambda x, y: x + y, (new_x, self.speed.get_value() * new_x), (self.speed.get_value() * new_ct, new_ct)))
         # Return the new coordinates
     
     def change_speed(self, new_speed, **kwargs):
         self.scene.play(self.speed.animate(**kwargs).set_value(new_speed))
-        return
-    
+
     def set_speed(self, new_speed):
         self.speed.set_value(new_speed)
         self.scene.play(self.speed.animate(run_time=1/60).set_value(new_speed))
-        return
 
 class Location:
     def __init__(self, diagram, x, ct):
@@ -115,14 +107,9 @@ class Location:
         self.ct = ValueTracker(ct)
         self.diagram = diagram
         self.everything = VGroup()
-        return
     
-    def _x(self, x, ct): 
-        a = (x - self.diagram.speed.get_value() * ct) / (1 - self.diagram.speed.get_value()**2)**(1/2)
-        return a
-    def _ct(self, x, ct): 
-        a = (ct - self.diagram.speed.get_value() * x) / (1 - self.diagram.speed.get_value()**2)**(1/2)
-        return a
+    _x = lambda self, x, ct: ((x - self.diagram.speed.get_value() * ct) / (1 - self.diagram.speed.get_value()**2)**0.5)
+    _ct = lambda self, x, ct: ((ct - self.diagram.speed.get_value() * x) / (1 - self.diagram.speed.get_value()**2)**0.5)
 
     def plot_lines(self, **kwargs):
         # Create the lines
@@ -135,7 +122,6 @@ class Location:
         self.everything.add(x_line, ct_line)
         self.diagram.scene.play(Create(x_line), Create(ct_line), **kwargs)
         self.diagram.scene.wait(0.1)
-        return
 
     def plot_point(self, **kwargs):
         # Create the point
@@ -145,7 +131,6 @@ class Location:
         self.everything.add(point)
         self.diagram.scene.play(Create(point), **kwargs)
         self.diagram.scene.wait(0.1)
-        return
 
     def plot__lines(self, **kwargs):
         # Create the lines 
@@ -158,24 +143,20 @@ class Location:
         self.everything.add(x__line, ct__line)
         self.diagram.scene.play(Create(x__line), Create(ct__line), **kwargs)
         self.diagram.scene.wait(0.1)
-        return
 
-    def get_prime_coords(self):
-        return (self._x(self.x.get_value(), self.ct.get_value()), self._ct(self.x.get_value(), self.ct.get_value()))
+    get_prime_coords = lambda self: (self._x(self.x.get_value(), self.ct.get_value()), self._ct(self.x.get_value(), self.ct.get_value()))
     
     def create(self, **kwargs):
         self.plot_lines(**kwargs)
         self.plot_point(**kwargs)
         self.plot__lines(**kwargs)
-        return 
 
     def remove(self):
         self.diagram.scene.remove(*self.everything)
-        return
+        
     
     def move_to(self, x, ct, **kwargs):
         self.diagram.scene.play(self.x.animate(**kwargs).set_value(x), self.ct.animate(**kwargs).set_value(ct))
-        return
 
 class PrimeLocation:
     def __init__(self, diagram, x, ct):
@@ -197,7 +178,6 @@ class PrimeLocation:
         self.diagram.scene.add(dummy)
         
         self.everything = VGroup()
-        return
 
     def plot__lines(self, **kwargs):
         # Create the lines
@@ -210,7 +190,6 @@ class PrimeLocation:
         self.everything.add(x__line, ct__line)
         self.diagram.scene.play(Create(x__line), Create(ct__line), **kwargs)
         self.diagram.scene.wait(0.1)
-        return
 
     def plot_point(self, **kwargs):
         # Create the point
@@ -220,7 +199,6 @@ class PrimeLocation:
         self.everything.add(point)
         self.diagram.scene.play(Create(point), **kwargs)
         self.diagram.scene.wait(0.1)
-        return
 
     def plot_lines(self, **kwargs):
         # Create the lines
@@ -233,33 +211,27 @@ class PrimeLocation:
         self.everything.add(x_line, ct_line)
         self.diagram.scene.play(Create(x_line), Create(ct_line), **kwargs)
         self.diagram.scene.wait(0.1)
-        return
 
-    def get_coords(self):
-        return (self.x.get_value(), self.ct.get_value())
+    get_coords = lambda self: (self.x.get_value(), self.ct.get_value())
     
     def create(self, **kwargs):
         self.plot__lines(**kwargs)
         self.plot_point(**kwargs)
         self.plot_lines(**kwargs)
-        return
 
     def remove(self):  
         self.diagram.scene.remove(*self.everything)
-        return
-    
+
     def move_to(self, x, ct, **kwargs):
         self.diagram.scene.play(self._x.animate(**kwargs).set_value(x), self._ct.animate(**kwargs).set_value(ct))
-        return
-    
+
 class WorldLine:
     def __init__(self, diagarm, speed=1, color=YELLOW):
         self.diagram = diagarm
         self.speed = speed
         self.color = color
         self.angle = np.arctan(speed)
-        return
-    
+
     def draw(self):
         self.line_head = Dot(self.diagram.grid @ (0, 0), color=self.color).scale(0.5)
         self.line = always_redraw(lambda: Line(self.line_head.get_center(), self.diagram.grid @ (0, 0), color=self.color, stroke_width=2)).scale(0.5)
@@ -267,33 +239,27 @@ class WorldLine:
         self.diagram.scene.play(Create(self.line_head), Create(self.line))
         self.wait()
         self.diagram.scene.play(self.line_head.animate.move_to(self.diagram.grid @ ((self.diagram.max_number - self.diagram.count) * self.angle, self.diagram.max_number - self.diagram.count)))
-        return
-    
+
     def draw_angle(self):
         self.angle = Angle(self.diagram.grid.get_y_axis(), self.line, quadrant=(1, -1), radius=np.linalg.norm(self.diagram.grid @ (0, 3 * self.diagram.count) - self.diagram.grid @ (0, 0)), other_angle=True)
         self.diagram.scene.play(Create(self.angle))
-        return
-    
+
 class LightClock:
     def __init__(self, scene):
         self.scene = scene
-
         self.case = NumberLine(x_range=[-1, 1, 1], exclude_origin_tick=True, length=1).rotate(90*DEGREES, about_point=ORIGIN)
-
-        scene.play(Create(self.case))
-        scene.wait()
-        
         self.ball = Dot(radius=np.linalg.norm(self.case @ (0) - self.case @ (0.1)), color=TEAL_A)
-        scene.play(GrowFromCenter(self.ball))
-        scene.wait()
-
         self.ball.start_direction = 1 # 1 is up
-    
+        self.objects = VGroup(self.case, self.ball)
+
+    def create(self):
+        self.scene.play(Create(self.case))
+        self.scene.play(GrowFromCenter(self.ball))
+
     def start(self):
         self.ball.start_time = self.scene.time
         self.ball.start_pos = self.case.p2n(self.ball.get_center())
         self.ball.add_updater(self.linear_bounce_updater)
-        return
 
     def linear_bounce_updater(self, mob, dt):
             t = self.scene.time - mob.start_time
@@ -307,7 +273,7 @@ class LightClock:
                 x = 0.9 - 3.6 * (frac - 0.5)
                 mob.end_direction = -1
             mob.move_to(self.case @ x)
-    
+
     def stop(self):
         self.ball.remove_updater(self.linear_bounce_updater)
         self.ball.start_direction = self.ball.end_direction

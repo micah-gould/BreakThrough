@@ -147,10 +147,40 @@ class GalilainEquations(Scene): # Done
 class LightClockExplenation(Scene):
     def construct(self):
         clock1 = LightClock(self)
+        clock1.objects.shift(DOWN)
+
+        clock1.create()
+        self.wait()
+        clock1.start()
+        self.wait(2)
+        clock1.stop()
+
+        clock2 = LightClock(self)
+        clock2.objects.shift(UP + 5*LEFT)
+
+        clock2.create()
+        self.wait()
+        clock1.start()
+        clock2.start()
+        self.play(clock2.case.animate(run_time=4, rate_func=linear).shift(10*RIGHT))
+        clock1.stop()
+        clock2.stop()
+
+        temp = LightClock(self)
+        temp.objects.shift(UP + 5*LEFT)
+        self.play(FadeOut(clock2.objects), FadeIn(temp.objects))
+        clock2 = temp
+
+        path = TracedPath(clock2.ball.get_center, stroke_color=YELLOW, stroke_width=2)
+        self.add(path)
 
         clock1.start()
+        clock2.start()
+        self.play(clock2.case.animate(run_time=4, rate_func=linear).shift(10*RIGHT))
+        clock1.stop()
+        clock2.stop()
 
-        # TODO: Finish
+        # TODO: finish
 
         return
 
