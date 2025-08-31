@@ -144,7 +144,7 @@ class GalilainEquations(Scene): # Done
         self.wait()
         return
 
-class LightClockExplenation(Scene):
+class LightClockExplenation(Scene): # TODO: FIXME: correct for dilation
     def construct(self):
         clock1 = LightClock(self)
         clock1.objects.shift(DOWN)
@@ -166,21 +166,49 @@ class LightClockExplenation(Scene):
         clock1.stop()
         clock2.stop()
 
-        temp = LightClock(self)
-        temp.objects.shift(UP + 5*LEFT)
-        self.play(FadeOut(clock2.objects), FadeIn(temp.objects))
-        clock2 = temp
+        clock3 = LightClock(self)
+        clock3.objects.shift(UP + 5*LEFT)
+        self.play(FadeOut(clock2.objects), FadeIn(clock3.objects))
 
-        path = TracedPath(clock2.ball.get_center, stroke_color=YELLOW, stroke_width=2)
+        path = TracedPath(clock3.ball.get_center, stroke_color=YELLOW, stroke_width=2)
         self.add(path)
 
         clock1.start()
-        clock2.start()
-        self.play(clock2.case.animate(run_time=4, rate_func=linear).shift(10*RIGHT))
+        clock3.start()
+        self.play(clock3.case.animate(run_time=4, rate_func=linear).shift(10*RIGHT))
         clock1.stop()
-        clock2.stop()
+        clock3.stop()
 
-        # TODO: finish
+        line = Line(0.55*UP + 5/4*LEFT, 1.45*UP + 5/4*RIGHT, color=YELLOW, stroke_width=2)
+        self.add(line)
+
+        self.play(FadeOut(path), FadeOut(clock3.objects), FadeOut(clock1.objects))
+        self.wait()
+
+        third_point = 0.55*UP + 5/4*RIGHT
+        base = Line(line.get_start(), third_point, color=YELLOW, stroke_width=2)
+        height = Line(line.get_end(), third_point, color=YELLOW, stroke_width=2)
+
+        self.play(Create(base), Create(height))
+
+        ct__label = MathTex(
+            r"{{c}} \Delta t_0",
+        ).next_to((height.get_start() + height.get_end())/2, RIGHT)
+        ct__label.set_color_by_tex(r"\Delta t_0", RED)
+
+        vt_label = MathTex(
+            r"{{v}} \Delta t",
+        ).next_to((base.get_start() + base.get_end())/2, DOWN)
+        vt_label.set_color_by_tex(r"\Delta t", BLUE)
+
+        ct_label = MathTex(
+            r"{{c}} \Delta t",
+        ).next_to((line.get_start() + line.get_end())/2, UP+0.75*LEFT)
+        ct_label.set_color_by_tex(r"\Delta t", BLUE)
+
+        self.play(Write(ct__label), Write(vt_label), Write(ct_label))
+
+        self.wait()
 
         return
 

@@ -256,16 +256,17 @@ class LightClock:
         self.scene.play(Create(self.case))
         self.scene.play(GrowFromCenter(self.ball))
 
-    def start(self):
+    def start(self, speed=1):
+        self.speed = speed
         self.ball.start_time = self.scene.time
         self.ball.start_pos = self.case.p2n(self.ball.get_center())
         self.ball.add_updater(self.linear_bounce_updater)
 
     def linear_bounce_updater(self, mob, dt):
-            t = self.scene.time - mob.start_time
-            period = 2     # total time for left -> right -> left
-            offset = mob.start_pos + 1 if mob.start_direction == 1 else 3 - mob.start_pos
-            frac = ((t + period * offset / 4) % period) / period
+            t = (self.scene.time - mob.start_time) * self.speed
+            period = 2
+            offset = mob.start_pos + 0.9 if mob.start_direction == 1 else 2.7 - mob.start_pos
+            frac = ((t + period * offset / 3.6) % period) / period
             if frac < 0.5:
                 x = -0.9 + 3.6 * frac
                 mob.end_direction = 1
