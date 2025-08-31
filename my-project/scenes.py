@@ -260,10 +260,10 @@ class LightClockExplenation(Scene):
         self.add(ct_brace2, ct_label2, vt_brace, vt_label, ct__brace2, ct__label2)
         self.remove(*clock1.objects)
 
-        equation1 = MathTex(r"({{c}} {{\Delta t}})^2", "=", r"({{v}} {{\Delta t}})^2", "+", r"({{c}} {{\Delta t_0}})^2")
-        equation2 = MathTex(r"c^2 {{\Delta t}}^2", "=", r"v^2 {{\Delta t}}^2", "+", r"c^2 {{\Delta t_0}}^2")
+        equation1 = MathTex(r"({{c}} {{\Delta t}}){{^2}}", "=", r"({{v}} {{\Delta t}}){{^2}}", "+", r"({{c}} {{\Delta t_0}}){{^2}}")
+        equation2 = MathTex(r"{{c}}^2 {{\Delta t}}^2", "=", r"{{v}}^2 {{\Delta t}}^2", "+", r"{{c}}^2 {{\Delta t_0}}^2")
         equation3 = MathTex(r"c^2 {{\Delta t}}^2", "-", r"v^2 {{\Delta t}}^2", "=", r"c^2 {{\Delta t_0}}^2")
-        equation4 = MathTex(r"\left(c^2 - v^2\right) {{\Delta t}}^2", "=", r"c^2 {{\Delta t_0}}^2")
+        equation4 = MathTex(r"\left({{c^2}} - {{v^2}}\right) {{\Delta t}}^2", "=", r"c^2 {{\Delta t_0}}^2")
         equation5 = MathTex(r"\frac{\left(c^2 - v^2\right)}{c^2} {{\Delta t}}^2", "=", r"{{\Delta t_0}}^2")
         equation6 = MathTex(r"\left(1 - \frac{v^2}{c^2}\right) {{\Delta t}}^2", "=", r"{{\Delta t_0}}^2")
         equation7 = MathTex(r"\sqrt{\left(1 - \frac{v^2}{c^2}\right) {{\Delta t}}^2}", "=", r"\sqrt{{{\Delta t_0}}^2}")
@@ -276,16 +276,47 @@ class LightClockExplenation(Scene):
         # Animate copies of each symbol into the equation
         self.play(
             TransformFromCopy(ct_label2, equation1[1:4]),  # "a" into "a" of "a^2"
-            TransformFromCopy(vt_label, equation1[7:10]),  # "b" into "b" of "b^2"
-            TransformFromCopy(ct__label2, equation1[13:16]),  # "c" into "c" of "c^2"
+            TransformFromCopy(vt_label, equation1[8:11]),  # "b" into "b" of "b^2"
+            TransformFromCopy(ct__label2, equation1[15:18]),  # "c" into "c" of "c^2"
         )
-        self.play(Write(equation1[0]), Write(equation1[4]), Write(equation1[6]), Write(equation1[10]), Write(equation1[12]), Write(equation1[16]))  # the "2"s
-        self.play(Write(equation1[5]), Write(equation1[11]))  # "+" and "="
+        self.play(Write(equation1[0]), Write(equation1[4:6]), Write(equation1[7]), Write(equation1[11:13]), Write(equation1[14]), Write(equation1[18:20]))  # the "2"s
+        self.play(Write(equation1[6]), Write(equation1[13]))  # "+" and "="
         # TODO: FIXME: manually correct animations
-        self.play(TransformMatchingTex(equation1, equation2))
+        self.play(
+            FadeOut(equation1[0]),
+            ReplacementTransform(equation1[1], equation2[0]),
+            TransformFromCopy(equation1[5], equation2[1]),
+            ReplacementTransform(equation1[2:4], equation2[2]),
+            FadeOut(equation1[4]),
+            ReplacementTransform(equation1[5:7], equation2[3:5]),
+            FadeOut(equation1[7]),
+            ReplacementTransform(equation1[8], equation2[5]),
+            TransformFromCopy(equation1[12], equation2[6]),
+            ReplacementTransform(equation1[9:11], equation2[7]),
+            FadeOut(equation1[11]),
+            ReplacementTransform(equation1[12:14], equation2[8:10]),
+            FadeOut(equation1[14]),
+            ReplacementTransform(equation1[15], equation2[10]),
+            TransformFromCopy(equation1[19], equation2[11]),
+            ReplacementTransform(equation1[16:18], equation2[12]),
+            FadeOut(equation1[18]),
+            ReplacementTransform(equation1[19], equation2[13]),
+        )
         self.play(TransformMatchingTex(equation2, equation3))
-        self.play(TransformMatchingTex(equation3, equation4))
-        self.play(TransformMatchingTex(equation4, equation5))
+        self.play(
+            FadeIn(equation4[0]),
+            ReplacementTransform(equation3[0], equation4[1]),
+            FadeOut(equation3[1:3]),
+            ReplacementTransform(equation3[3:5], equation4[2:4]),
+            FadeIn(equation4[4]),
+            ReplacementTransform(equation3[5:], equation4[5:]),
+        )
+        self.play(
+            ReplacementTransform(equation4[0:5], equation5[0][0:7]),
+            ReplacementTransform(equation4[8], equation5[0][8:10], arc_angle=-30*DEGREES),
+            ReplacementTransform(equation4[5:8], equation5[1:4]),
+            ReplacementTransform(equation4[9:], equation5[4:]),
+        )
         self.play(TransformMatchingTex(equation5, equation6))
         self.play(TransformMatchingTex(equation6, equation7))
         self.play(TransformMatchingTex(equation7, equation8))
