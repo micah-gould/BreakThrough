@@ -172,57 +172,57 @@ class LightClockExplenation(Scene):
         clock1.objects.shift(DOWN)
 
         clock1.create()
-        self.wait()
-        clock1.start()
-        self.wait(2)
-        clock1.stop()
+        # self.wait()
+        # clock1.start()
+        # self.wait(2)
+        # clock1.stop()
 
-        clock2 = LightClock(self)
-        clock2.objects.shift(UP)
+        # clock2 = LightClock(self)
+        # clock2.objects.shift(UP)
 
-        self.play(FadeOut(clock1.objects), FadeIn(clock2.objects))
-        self.remove(*clock1.objects)
-        self.wait()
-        clock2.start()
-        self.play(background.animate(run_time=4, rate_func=linear).shift(LEFT*10))
-        clock2.stop()
+        # self.play(FadeOut(clock1.objects), FadeIn(clock2.objects))
+        # self.remove(*clock1.objects)
+        # self.wait()
+        # clock2.start()
+        # self.play(background.animate(run_time=4, rate_func=linear).shift(LEFT*10))
+        # clock2.stop()
 
-        ct__brace = BraceBetweenPoints(clock2.case @ -0.9, clock2.case @ 0.9)
-        ct__label = ct__brace.get_tex(r"{{c}} \Delta t_0")
-        ct__label.set_color_by_tex(r"\Delta t_0", RED)
+        # ct__brace = BraceBetweenPoints(clock2.case @ -0.9, clock2.case @ 0.9)
+        # ct__label = ct__brace.get_tex(r"{{c}} \Delta t_0")
+        # ct__label.set_color_by_tex(r"\Delta t_0", RED)
 
-        self.add(ct__brace, ct__label)
+        # self.add(ct__brace, ct__label)
 
-        self.wait()
+        # self.wait()
 
-        self.remove(ct__brace, ct__label, *clock2.objects)
+        # self.remove(ct__brace, ct__label, *clock2.objects)
 
-        clock3 = LightClock(self)
-        clock3.objects.shift(UP + 5*LEFT)
-        self.play(FadeIn(clock1.objects), FadeIn(clock3.objects))
+        # clock3 = LightClock(self)
+        # clock3.objects.shift(UP + 5*LEFT)
+        # self.play(FadeIn(clock1.objects), FadeIn(clock3.objects))
 
-        clock3.start()
-        self.play(clock3.case.animate(run_time=1.5, rate_func=linear).shift(15/4*RIGHT))
-        clock3.stop()
+        # clock3.start()
+        # self.play(clock3.case.animate(run_time=1.5, rate_func=linear).shift(15/4*RIGHT))
+        # clock3.stop()
 
-        path = TracedPath(clock3.ball.get_center, stroke_color=YELLOW, stroke_width=2)
-        self.add(path)
+        # path = TracedPath(clock3.ball.get_center, stroke_color=YELLOW, stroke_width=2)
+        # self.add(path)
 
-        clock3.start()
-        self.play(clock3.case.animate(run_time=1, rate_func=linear).shift(5/2*RIGHT))
-        clock3.stop()
+        # clock3.start()
+        # self.play(clock3.case.animate(run_time=1, rate_func=linear).shift(5/2*RIGHT))
+        # clock3.stop()
 
-        path.clear_updaters()
+        # path.clear_updaters()
 
-        ct_brace = BraceBetweenPoints(path.get_end(), path.get_start())
-        ct_label = ct_brace.get_tex(r"{{c}} \Delta t")
-        ct_label.set_color_by_tex(r"\Delta t", BLUE)
+        # ct_brace = BraceBetweenPoints(path.get_end(), path.get_start())
+        # ct_label = ct_brace.get_tex(r"{{c}} \Delta t")
+        # ct_label.set_color_by_tex(r"\Delta t", BLUE)
 
-        self.add(ct_brace, ct_label)
+        # self.add(ct_brace, ct_label)
 
-        self.wait()
+        # self.wait()
 
-        self.remove(path, ct_brace, ct_label, *clock3.objects)
+        # self.remove(path, ct_brace, ct_label, *clock3.objects)
 
         clock4 = LightClock(self)
         clock4.objects.shift(UP + 6.25*LEFT)
@@ -260,18 +260,35 @@ class LightClockExplenation(Scene):
         self.add(ct_brace2, ct_label2, vt_brace, vt_label, ct__brace2, ct__label2)
         self.remove(*clock1.objects)
 
-        equation = MathTex(r"({{v}} {{\Delta t}})^2", "+", r"({{c}} {{\Delta t_0}})^2", "=", r"({{c}} {{\Delta t}})^2").scale(1.5).shift(DOWN)
-        equation.set_color_by_tex(r"\Delta t", BLUE)
-        equation.set_color_by_tex(r"\Delta t_0", RED)
+        equation1 = MathTex(r"({{c}} {{\Delta t}})^2", "=", r"({{v}} {{\Delta t}})^2", "+", r"({{c}} {{\Delta t_0}})^2")
+        equation2 = MathTex(r"c^2 {{\Delta t}}^2", "=", r"v^2 {{\Delta t}}^2", "+", r"c^2 {{\Delta t_0}}^2")
+        equation3 = MathTex(r"c^2 {{\Delta t}}^2", "-", r"v^2 {{\Delta t}}^2", "=", r"c^2 {{\Delta t_0}}^2")
+        equation4 = MathTex(r"\left(c^2 - v^2\right) {{\Delta t}}^2", "=", r"c^2 {{\Delta t_0}}^2")
+        equation5 = MathTex(r"\frac{\left(c^2 - v^2\right)}{c^2} {{\Delta t}}^2", "=", r"{{\Delta t_0}}^2")
+        equation6 = MathTex(r"\left(1 - \frac{v^2}{c^2}\right) {{\Delta t}}^2", "=", r"{{\Delta t_0}}^2")
+        equation7 = MathTex(r"\sqrt{\left(1 - \frac{v^2}{c^2}\right) {{\Delta t}}^2}", "=", r"\sqrt{{{\Delta t_0}}^2}")
+        equation8 = MathTex(r"\sqrt{\left(1 - \frac{v^2}{c^2}\right)} {{\Delta t}}", "=", r"{{\Delta t_0}}")
+        equations = Group(equation1, equation2, equation3, equation4, equation5, equation6, equation7, equation8)
+        for eq in equations: eq.set_color_by_tex(r"\Delta t", BLUE)
+        for eq in equations: eq.set_color_by_tex(r"\Delta t_0", RED)
+        equations.scale(1.5).shift(DOWN)
 
         # Animate copies of each symbol into the equation
         self.play(
-            TransformFromCopy(vt_label, equation[1:4]),  # "a" into "a" of "a^2"
-            TransformFromCopy(ct__label2, equation[7:10]),  # "b" into "b" of "b^2"
-            TransformFromCopy(ct_label2, equation[13:16]),  # "c" into "c" of "c^2"
+            TransformFromCopy(ct_label2, equation1[1:4]),  # "a" into "a" of "a^2"
+            TransformFromCopy(vt_label, equation1[7:10]),  # "b" into "b" of "b^2"
+            TransformFromCopy(ct__label2, equation1[13:16]),  # "c" into "c" of "c^2"
         )
-        self.play(Write(equation[0]), Write(equation[4]), Write(equation[6]), Write(equation[10]), Write(equation[12]), Write(equation[16]))  # the "2"s
-        self.play(Write(equation[5]), Write(equation[11]))  # "+" and "="
+        self.play(Write(equation1[0]), Write(equation1[4]), Write(equation1[6]), Write(equation1[10]), Write(equation1[12]), Write(equation1[16]))  # the "2"s
+        self.play(Write(equation1[5]), Write(equation1[11]))  # "+" and "="
+        # TODO: FIXME: manually correct animations
+        self.play(TransformMatchingTex(equation1, equation2))
+        self.play(TransformMatchingTex(equation2, equation3))
+        self.play(TransformMatchingTex(equation3, equation4))
+        self.play(TransformMatchingTex(equation4, equation5))
+        self.play(TransformMatchingTex(equation5, equation6))
+        self.play(TransformMatchingTex(equation6, equation7))
+        self.play(TransformMatchingTex(equation7, equation8))
 
         self.wait()
 
