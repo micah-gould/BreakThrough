@@ -144,8 +144,30 @@ class GalilainEquations(Scene): # Done
         self.wait()
         return
 
-class LightClockExplenation(Scene): # TODO: FIXME: correct for dilation
+class LightClockExplenation(Scene):
     def construct(self):
+        background = NumberPlane(
+            x_range=[-100, 100, 1], 
+            y_range=[-100, 100, 1], 
+            background_line_style={
+                "stroke_color": PURPLE_A,
+                "stroke_width": 2,
+            },
+            faded_line_style={
+                "stroke_color": PURPLE_A,
+                "stroke_width": 1,
+            },
+            faded_line_ratio=3,
+            axis_config={"color": PURPLE_A},
+            stroke_width=2).set_opacity(0.5)
+        self.add(background)
+
+        ORIGIN = background @ (0, 0)
+        UP = background @ (0, 1) - ORIGIN
+        DOWN = background @ (0, -1) - ORIGIN
+        LEFT = background @ (-1, 0) - ORIGIN
+        RIGHT = background @ (1, 0) - ORIGIN
+
         clock1 = LightClock(self)
         clock1.objects.shift(DOWN)
 
@@ -156,57 +178,100 @@ class LightClockExplenation(Scene): # TODO: FIXME: correct for dilation
         clock1.stop()
 
         clock2 = LightClock(self)
-        clock2.objects.shift(UP + 5*LEFT)
+        clock2.objects.shift(UP)
 
-        clock2.create()
+        self.play(FadeOut(clock1.objects), FadeIn(clock2.objects))
+        self.remove(*clock1.objects)
         self.wait()
-        clock1.start()
         clock2.start()
-        self.play(clock2.case.animate(run_time=4, rate_func=linear).shift(10*RIGHT))
-        clock1.stop()
+        self.play(background.animate(run_time=4, rate_func=linear).shift(LEFT*10))
         clock2.stop()
+
+        ct__brace = BraceBetweenPoints(clock2.case @ -0.9, clock2.case @ 0.9)
+        ct__label = ct__brace.get_tex(r"{{c}} \Delta t_0")
+        ct__label.set_color_by_tex(r"\Delta t_0", RED)
+
+        self.add(ct__brace, ct__label)
+
+        self.wait()
+
+        self.remove(ct__brace, ct__label, *clock2.objects)
 
         clock3 = LightClock(self)
         clock3.objects.shift(UP + 5*LEFT)
-        self.play(FadeOut(clock2.objects), FadeIn(clock3.objects))
+        self.play(FadeIn(clock1.objects), FadeIn(clock3.objects))
+
+        clock3.start()
+        self.play(clock3.case.animate(run_time=1.5, rate_func=linear).shift(15/4*RIGHT))
+        clock3.stop()
 
         path = TracedPath(clock3.ball.get_center, stroke_color=YELLOW, stroke_width=2)
         self.add(path)
 
-        clock1.start()
         clock3.start()
-        self.play(clock3.case.animate(run_time=4, rate_func=linear).shift(10*RIGHT))
-        clock1.stop()
+        self.play(clock3.case.animate(run_time=1, rate_func=linear).shift(5/2*RIGHT))
         clock3.stop()
 
-        line = Line(0.55*UP + 5/4*LEFT, 1.45*UP + 5/4*RIGHT, color=YELLOW, stroke_width=2)
-        self.add(line)
+        path.clear_updaters()
 
-        self.play(FadeOut(path), FadeOut(clock3.objects), FadeOut(clock1.objects))
-        self.wait()
-
-        third_point = 0.55*UP + 5/4*RIGHT
-        base = Line(line.get_start(), third_point, color=YELLOW, stroke_width=2)
-        height = Line(line.get_end(), third_point, color=YELLOW, stroke_width=2)
-
-        self.play(Create(base), Create(height))
-
-        ct__label = MathTex(
-            r"{{c}} \Delta t_0",
-        ).next_to((height.get_start() + height.get_end())/2, RIGHT)
-        ct__label.set_color_by_tex(r"\Delta t_0", RED)
-
-        vt_label = MathTex(
-            r"{{v}} \Delta t",
-        ).next_to((base.get_start() + base.get_end())/2, DOWN)
-        vt_label.set_color_by_tex(r"\Delta t", BLUE)
-
-        ct_label = MathTex(
-            r"{{c}} \Delta t",
-        ).next_to((line.get_start() + line.get_end())/2, UP+0.75*LEFT)
+        ct_brace = BraceBetweenPoints(path.get_end(), path.get_start())
+        ct_label = ct_brace.get_tex(r"{{c}} \Delta t")
         ct_label.set_color_by_tex(r"\Delta t", BLUE)
 
-        self.play(Write(ct__label), Write(vt_label), Write(ct_label))
+        self.add(ct_brace, ct_label)
+
+        self.wait()
+
+        self.remove(path, ct_brace, ct_label, *clock3.objects)
+
+        clock4 = LightClock(self)
+        clock4.objects.shift(UP + 6.25*LEFT)
+        self.play(FadeIn(clock4.objects))
+
+        clock1.start()
+        clock4.start(0.8)
+        self.play(clock4.case.animate(run_time=1.875, rate_func=linear).shift(4.6875*RIGHT))
+        clock4.stop()
+
+        path2 = TracedPath(clock4.ball.get_center, stroke_color=YELLOW, stroke_width=2)
+        path3 = TracedPath(lambda: clock4.case @ -0.9, stroke_color=YELLOW, stroke_width=2)
+        self.add(path2, path3)
+
+        clock4.start(0.8)
+        self.play(clock4.case.animate(run_time=1.25, rate_func=linear).shift(3.125*RIGHT))
+        clock4.stop()
+        clock1.stop()
+
+        path2.clear_updaters()
+        path3.clear_updaters()
+
+        ct__brace2 = BraceBetweenPoints(clock4.case @ -0.9, clock4.case @ 0.9)
+        ct__label2 = ct__brace2.get_tex(r"c {{\Delta t_0}}")
+        ct__label2.set_color_by_tex(r"\Delta t_0", RED)
+        
+        ct_brace2 = BraceBetweenPoints(path2.get_end(), path2.get_start())
+        ct_label2 = ct_brace2.get_tex(r"c {{\Delta t}}")
+        ct_label2.set_color_by_tex(r"\Delta t", BLUE)
+
+        vt_brace = BraceBetweenPoints(path3.get_start(), path3.get_end())
+        vt_label = vt_brace.get_tex(r"v {{\Delta t}}",)
+        vt_label.set_color_by_tex(r"\Delta t", BLUE)
+
+        self.add(ct_brace2, ct_label2, vt_brace, vt_label, ct__brace2, ct__label2)
+        self.remove(*clock1.objects)
+
+        equation = MathTex(r"({{v}} {{\Delta t}})^2", "+", r"({{c}} {{\Delta t_0}})^2", "=", r"({{c}} {{\Delta t}})^2").scale(1.5).shift(DOWN)
+        equation.set_color_by_tex(r"\Delta t", BLUE)
+        equation.set_color_by_tex(r"\Delta t_0", RED)
+
+        # Animate copies of each symbol into the equation
+        self.play(
+            TransformFromCopy(vt_label, equation[1:4]),  # "a" into "a" of "a^2"
+            TransformFromCopy(ct__label2, equation[7:10]),  # "b" into "b" of "b^2"
+            TransformFromCopy(ct_label2, equation[13:16]),  # "c" into "c" of "c^2"
+        )
+        self.play(Write(equation[0]), Write(equation[4]), Write(equation[6]), Write(equation[10]), Write(equation[12]), Write(equation[16]))  # the "2"s
+        self.play(Write(equation[5]), Write(equation[11]))  # "+" and "="
 
         self.wait()
 
