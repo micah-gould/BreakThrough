@@ -293,16 +293,16 @@ class Equations(Scene):
         path2 = Line(clock.case @ -0.9 + 3.125 * LEFT, clock.case @ -0.9, stroke_color=YELLOW, stroke_width=2)
         
         ct__brace = BraceBetweenPoints(clock.case @ -0.9, clock.case @ 0.9)
-        ct__label = ct__brace.get_tex(r"{{c}} \Delta t_0")
-        ct__label.set_color_by_tex(r"\Delta t_0", RED)
+        ct__label = ct__brace.get_tex(r"c \Delta t_0")
+        for i in [1,2,3]: ct__label[0][i].set_color(RED)
         
         ct_brace = BraceBetweenPoints(path.get_end(), path.get_start())
-        ct_label = ct_brace.get_tex(r"{{c}} \Delta t")
-        ct_label.set_color_by_tex(r"\Delta t", BLUE)
+        ct_label = ct_brace.get_tex(r"c \Delta t")
+        for i in [1,2]: ct_label[0][i].set_color(BLUE)
 
         vt_brace = BraceBetweenPoints(path2.get_start(), path2.get_end())
-        vt_label = vt_brace.get_tex(r"{{v}} \Delta t",)
-        vt_label.set_color_by_tex(r"\Delta t", BLUE)
+        vt_label = vt_brace.get_tex(r"v \Delta t",)
+        for i in [1,2]: vt_label[0][i].set_color(BLUE)
 
         things_to_shift = VGroup(ct_brace, ct_label, vt_brace, vt_label, ct__brace, ct__label, *clock.objects, path, path2)
         self.add(things_to_shift)
@@ -325,8 +325,8 @@ class Equations(Scene):
             equation3[0][i].set_color(BLUE)
         for i in [7,8]: equation4[0][i].set_color(BLUE)
         for i in [10,11]: equation5[0][i].set_color(BLUE)
+        for i in [9,10]: equation6[0][i].set_color(BLUE)
         for i in [11,12]: 
-            equation6[0][i].set_color(BLUE)
             equation7[0][i].set_color(BLUE)
             equation8[0][i].set_color(BLUE)
         for i in [0,1]: 
@@ -334,7 +334,7 @@ class Equations(Scene):
             equation10[0][i].set_color(BLUE)
 
         for i in [-3,-4,-5]: equation1[0][i].set_color(RED)
-        for i in [-2, -3,-4]: 
+        for i in [-1,-3,-4]: 
             equation2[0][i].set_color(RED)
             equation3[0][i].set_color(RED)
             equation4[0][i].set_color(RED)
@@ -349,9 +349,12 @@ class Equations(Scene):
         self.play(things_to_shift.animate.shift(UP))
         # Animate copies of each symbol into the equation
         self.play(
-            TransformByGlyphMap(ct_label, equation1[0][1:4], from_copy=True),  # "a" into "a" of "a^2"
-            TransformByGlyphMap(vt_label, equation1[0][8:11], from_copy=True),  # "b" into "b" of "b^2"
-            TransformByGlyphMap(ct__label, equation1[0][15:19], from_copy=True),  # "c" into "c" of "c^2"
+            TransformFromCopy(ct_label[0][:2], equation1[0][1:3]),
+            TransformFromCopy(ct_label[0][2], equation1[0][3]),
+            TransformFromCopy(vt_label[0][:2], equation1[0][8:10]),
+            TransformFromCopy(vt_label[0][2], equation1[0][10]),
+            TransformFromCopy(ct__label[0][:2], equation1[0][15:17]),
+            TransformFromCopy(ct__label[0][2:], equation1[0][17:19]),
         )
         self.play(Write(equation1[0][0]), Write(equation1[0][4:6]), Write(equation1[0][7]), Write(equation1[0][11:13]), Write(equation1[0][14]), Write(equation1[0][19:21]))  # the "2"s
         self.play(Write(equation1[0][6]), Write(equation1[0][13]))  # "+" and "="
@@ -417,7 +420,7 @@ class Equations(Scene):
         lorentz_equation = MathTex(r"\gamma=\frac{1}{\sqrt{\left(1 - \frac{v^2}{c^2}\right)}}").shift(2.5*DOWN)
         
         self.play(
-            Write(lorentz_equation[0][0:2]),
+            Write(lorentz_equation[0][:2]),
             TransformFromCopy(equation9[0][3], lorentz_equation[0][2:]),
             TransformByGlyphMap(
                 equation9, equation10,
