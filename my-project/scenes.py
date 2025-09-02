@@ -102,9 +102,9 @@ class TwoTrains(Scene):
     
 class GalilainEquations(Scene): # Done
     def construct(self):
-        x = MathTex('x\' = x - vt')
-        t = MathTex('t\' = t')
-        v = MathTex('u\' = u - v')
+        x = MathTex('{{x\'}} = {{x}} - {{v}}{{t}}')
+        t = MathTex('{{t\'}} = {{t}}')
+        v = MathTex('{{u\'}} = {{u}} - {{v}}')
         equations = VGroup(x, t, v).arrange(DOWN, aligned_edge=LEFT).scale(1.2)
 
         prime_color = PURPLE
@@ -189,7 +189,7 @@ class LightClockExplenation(Scene):
         clock2.stop()
 
         ct__brace = BraceBetweenPoints(clock2.case @ -0.9, clock2.case @ 0.9)
-        ct__label = ct__brace.get_tex(r"c \Delta t_0")
+        ct__label = ct__brace.get_tex(r"c {{\Delta t_0}}")
         ct__label.set_color_by_tex(r"\Delta t_0", RED)
 
         self.add(ct__brace, ct__label)
@@ -216,7 +216,7 @@ class LightClockExplenation(Scene):
         path.clear_updaters()
 
         ct_brace = BraceBetweenPoints(path.get_end(), path.get_start())
-        ct_label = ct_brace.get_tex(r"c \Delta t")
+        ct_label = ct_brace.get_tex(r"c {{\Delta t}}")
         ct_label.set_color_by_tex(r"\Delta t", BLUE)
 
         self.add(ct_brace, ct_label)
@@ -247,15 +247,15 @@ class LightClockExplenation(Scene):
         path3.clear_updaters()
 
         ct__brace2 = BraceBetweenPoints(clock4.case @ -0.9, clock4.case @ 0.9)
-        ct__label2 = ct__brace2.get_tex(r"c \Delta t_0")
+        ct__label2 = ct__brace2.get_tex(r"c {{\Delta t_0}}")
         ct__label2.set_color_by_tex(r"\Delta t_0", RED)
         
         ct_brace2 = BraceBetweenPoints(path2.get_end(), path2.get_start())
-        ct_label2 = ct_brace2.get_tex(r"c \Delta t")
+        ct_label2 = ct_brace2.get_tex(r"c {{\Delta t}}")
         ct_label2.set_color_by_tex(r"\Delta t", BLUE)
 
         vt_brace = BraceBetweenPoints(path3.get_start(), path3.get_end())
-        vt_label = vt_brace.get_tex(r"v \Delta t",)
+        vt_label = vt_brace.get_tex(r"v {{\Delta t}}",)
         vt_label.set_color_by_tex(r"\Delta t", BLUE)
 
         self.add(ct_brace2, ct_label2, vt_brace, vt_label, ct__brace2, ct__label2)
@@ -289,6 +289,7 @@ class Equations(Scene):
 
         clock = LightClock(self)
         clock.objects.shift(UP+1.5625*RIGHT)
+        clock.ball.move_to(clock.case @ 0.9)
         path = Line(clock.case @ -0.9 + 3.125 * LEFT, clock.case @ 0.9, stroke_color=YELLOW, stroke_width=2)
         path2 = Line(clock.case @ -0.9 + 3.125 * LEFT, clock.case @ -0.9, stroke_color=YELLOW, stroke_width=2)
         
