@@ -1,5 +1,6 @@
 from manim import *
 from custom_classes import *
+from MF_Tools import TransformByGlyphMap
 
 # TODO: Add subtitles later
 
@@ -101,9 +102,9 @@ class TwoTrains(Scene):
     
 class GalilainEquations(Scene): # Done
     def construct(self):
-        x = MathTex('{{x\'}} = {{x}} - {{v}}{{t}}')
-        t = MathTex('{{t\'}} = {{t}}')
-        v = MathTex('{{u\'}} = {{u}} - {{v}}')
+        x = MathTex('x\' = x - vt')
+        t = MathTex('t\' = t')
+        v = MathTex('u\' = u - v')
         equations = VGroup(x, t, v).arrange(DOWN, aligned_edge=LEFT).scale(1.2)
 
         prime_color = PURPLE
@@ -188,7 +189,7 @@ class LightClockExplenation(Scene):
         clock2.stop()
 
         ct__brace = BraceBetweenPoints(clock2.case @ -0.9, clock2.case @ 0.9)
-        ct__label = ct__brace.get_tex(r"{{c}} \Delta t_0")
+        ct__label = ct__brace.get_tex(r"c \Delta t_0")
         ct__label.set_color_by_tex(r"\Delta t_0", RED)
 
         self.add(ct__brace, ct__label)
@@ -215,7 +216,7 @@ class LightClockExplenation(Scene):
         path.clear_updaters()
 
         ct_brace = BraceBetweenPoints(path.get_end(), path.get_start())
-        ct_label = ct_brace.get_tex(r"{{c}} \Delta t")
+        ct_label = ct_brace.get_tex(r"c \Delta t")
         ct_label.set_color_by_tex(r"\Delta t", BLUE)
 
         self.add(ct_brace, ct_label)
@@ -246,115 +247,225 @@ class LightClockExplenation(Scene):
         path3.clear_updaters()
 
         ct__brace2 = BraceBetweenPoints(clock4.case @ -0.9, clock4.case @ 0.9)
-        ct__label2 = ct__brace2.get_tex(r"c {{\Delta t_0}}")
+        ct__label2 = ct__brace2.get_tex(r"c \Delta t_0")
         ct__label2.set_color_by_tex(r"\Delta t_0", RED)
         
         ct_brace2 = BraceBetweenPoints(path2.get_end(), path2.get_start())
-        ct_label2 = ct_brace2.get_tex(r"c {{\Delta t}}")
+        ct_label2 = ct_brace2.get_tex(r"c \Delta t")
         ct_label2.set_color_by_tex(r"\Delta t", BLUE)
 
         vt_brace = BraceBetweenPoints(path3.get_start(), path3.get_end())
-        vt_label = vt_brace.get_tex(r"v {{\Delta t}}",)
+        vt_label = vt_brace.get_tex(r"v \Delta t",)
         vt_label.set_color_by_tex(r"\Delta t", BLUE)
 
         self.add(ct_brace2, ct_label2, vt_brace, vt_label, ct__brace2, ct__label2)
         self.remove(*clock1.objects)
-
-        equation1 = MathTex(r"({{c}} {{\Delta t}}){{^2}}", "=", r"({{v}} {{\Delta t}}){{^2}}", "+", r"({{c}} {{\Delta t_0}}){{^2}}")
-        equation2 = MathTex(r"{{c}}^2 {{\Delta t}}^2", "=", r"{{v}}^2 {{\Delta t}}^2", "+", r"{{c}}^2 {{\Delta t_0}}^2")
-        equation3 = MathTex(r"c^2 {{\Delta t}}^2", "-", r"v^2 {{\Delta t}}^2", "=", r"c^2 {{\Delta t_0}}^2")
-        equation4 = MathTex(r"\left({{c^2}} - {{v^2}}\right) {{\Delta t}}^2", "=", r"c^2 {{\Delta t_0}}^2")
-        equation5 = MathTex(r"\frac{\left(c^2 - v^2\right)}{c^2} {{\Delta t}}^2", "=", r"{{\Delta t_0}}^2")
-        equation6 = MathTex(r"\left(1 - \frac{v^2}{c^2}\right) {{\Delta t}}^2", "=", r"{{\Delta t_0}}^2")
-        equation7 = MathTex(r"\sqrt{\left(1 - \frac{v^2}{c^2}\right) {{\Delta t}}^2}", "=", r"\sqrt{{{\Delta t_0}}^2}")
-        equation8 = MathTex(r"\sqrt{\left(1 - \frac{v^2}{c^2}\right)} {{\Delta t}}", "=", r"{{\Delta t_0}}")
-        equation9 = MathTex(r"{{\Delta t}}", "=", r"\frac{1}{\sqrt{\left(1 - \frac{v^2}{c^2}\right)}}{{\Delta t_0}}")
-        equations = Group(equation1, equation2, equation3, equation4, equation5, equation6, equation7, equation8, equation9)
-        for eq in equations: eq.set_color_by_tex(r"\Delta t", BLUE)
-        for eq in equations: eq.set_color_by_tex(r"\Delta t_0", RED)
-        equations.shift(0.5*DOWN)
-
-        things_to_shift = VGroup(ct_brace2, ct_label2, vt_brace, vt_label, ct__brace2, ct__label2, *clock4.objects, path2, path3)
-        # Animate copies of each symbol into the equation
-        self.play(
-            things_to_shift.animate.shift(UP),
-            TransformFromCopy(ct_label2, equation1[1:4]),  # "a" into "a" of "a^2"
-            TransformFromCopy(vt_label, equation1[8:11]),  # "b" into "b" of "b^2"
-            TransformFromCopy(ct__label2, equation1[15:18]),  # "c" into "c" of "c^2"
-        )
-        self.play(Write(equation1[0]), Write(equation1[4:6]), Write(equation1[7]), Write(equation1[11:13]), Write(equation1[14]), Write(equation1[18:20]))  # the "2"s
-        self.play(Write(equation1[6]), Write(equation1[13]))  # "+" and "="
-        self.play(
-            FadeOut(equation1[0]),
-            ReplacementTransform(equation1[1], equation2[0]),
-            TransformFromCopy(equation1[5], equation2[1]),
-            ReplacementTransform(equation1[2:4], equation2[2]),
-            FadeOut(equation1[4]),
-            ReplacementTransform(equation1[5:7], equation2[3:5]),
-            FadeOut(equation1[7]),
-            ReplacementTransform(equation1[8], equation2[5]),
-            TransformFromCopy(equation1[12], equation2[6]),
-            ReplacementTransform(equation1[9:11], equation2[7]),
-            FadeOut(equation1[11]),
-            ReplacementTransform(equation1[12:14], equation2[8:10]),
-            FadeOut(equation1[14]),
-            ReplacementTransform(equation1[15], equation2[10]),
-            TransformFromCopy(equation1[19], equation2[11]),
-            ReplacementTransform(equation1[16:18], equation2[12]),
-            FadeOut(equation1[18]),
-            ReplacementTransform(equation1[19], equation2[13]),
-        )
-        self.play(TransformMatchingTex(equation2, equation3))
-        self.play(
-            FadeIn(equation4[0]),
-            ReplacementTransform(equation3[0], equation4[1]),
-            FadeOut(equation3[1:3]),
-            ReplacementTransform(equation3[3:5], equation4[2:4]),
-            FadeIn(equation4[4]),
-            ReplacementTransform(equation3[5:], equation4[5:]),
-        )
-        self.play(
-            ReplacementTransform(equation4[0:5], equation5[0][0:7]),
-            FadeIn(equation5[0][7]),
-            ReplacementTransform(equation4[8], equation5[0][8:10], arc_angle=-30*DEGREES),
-            ReplacementTransform(equation4[5:8], equation5[1:4]),
-            ReplacementTransform(equation4[9:], equation5[4:]),
-        )
-        self.play(TransformMatchingTex(equation5, equation6))
-        self.play(TransformMatchingTex(equation6, equation7))
-        self.play(
-            ReplacementTransform(equation7[0:2], equation8[0:2]),
-            FadeOut(equation7[2]),
-            ReplacementTransform(equation7[3], equation8[2]),
-            FadeOut(equation7[4]),
-            ReplacementTransform(equation7[5], equation8[3]),
-            FadeOut(equation7[6]),
-        )
-        self.play(
-            FadeIn(equation9[2][:2]),
-            ReplacementTransform(equation8[0], equation9[2][2:], arc_angle=30*DEGREES),
-            ReplacementTransform(equation8[1:3], equation9[0:2]),
-            ReplacementTransform(equation8[3], equation9[3]),
-        )
-
-        self.wait()
-
-        lorenz_equation = MathTex(r"\gamma", "=", r"\frac{1}{\sqrt{\left(1 - \frac{v^2}{c^2}\right)}}").shift(2.5*DOWN)
-
-        self.play(
-            Write(lorenz_equation[0:2]),
-            TransformFromCopy(equation9[2], lorenz_equation[2])
-        )
-
         self.wait()
 
         return
+class Equations(Scene):
+    def construct(self):
+        background = NumberPlane(
+            x_range=[-100, 100, 1], 
+            y_range=[-100, 100, 1], 
+            background_line_style={
+                "stroke_color": PURPLE_A,
+                "stroke_width": 2,
+            },
+            faded_line_style={
+                "stroke_color": PURPLE_A,
+                "stroke_width": 1,
+            },
+            faded_line_ratio=3,
+            axis_config={"color": PURPLE_A},
+            stroke_width=2).set_opacity(0.5)
+        self.add(background)
+
+        ORIGIN = background @ (0, 0)
+        UP = background @ (0, 1) - ORIGIN
+        DOWN = background @ (0, -1) - ORIGIN
+        LEFT = background @ (-1, 0) - ORIGIN
+        RIGHT = background @ (1, 0) - ORIGIN
+
+        clock = LightClock(self)
+        clock.objects.shift(UP+1.5625*RIGHT)
+        path = Line(clock.case @ -0.9 + 3.125 * LEFT, clock.case @ 0.9, stroke_color=YELLOW, stroke_width=2)
+        path2 = Line(clock.case @ -0.9 + 3.125 * LEFT, clock.case @ -0.9, stroke_color=YELLOW, stroke_width=2)
+        
+        ct__brace = BraceBetweenPoints(clock.case @ -0.9, clock.case @ 0.9)
+        ct__label = ct__brace.get_tex(r"{{c}} \Delta t_0")
+        ct__label.set_color_by_tex(r"\Delta t_0", RED)
+        
+        ct_brace = BraceBetweenPoints(path.get_end(), path.get_start())
+        ct_label = ct_brace.get_tex(r"{{c}} \Delta t")
+        ct_label.set_color_by_tex(r"\Delta t", BLUE)
+
+        vt_brace = BraceBetweenPoints(path2.get_start(), path2.get_end())
+        vt_label = vt_brace.get_tex(r"{{v}} \Delta t",)
+        vt_label.set_color_by_tex(r"\Delta t", BLUE)
+
+        things_to_shift = VGroup(ct_brace, ct_label, vt_brace, vt_label, ct__brace, ct__label, *clock.objects, path, path2)
+        self.add(things_to_shift)
+
+        equation1 = MathTex(r"\left(c \Delta t\right)^2 = \left(v \Delta t\right)^2 + \left(c \Delta t_0\right)^2")
+        equation2 = MathTex(r"c^2 \Delta t^2 = v^2 \Delta t^2 + c^2 \Delta t_0^2")
+        equation3 = MathTex(r"c^2 \Delta t^2 - v^2 \Delta t^2 = c^2 \Delta t_0^2")
+        equation4 = MathTex(r"\left(c^2 - v^2\right) \Delta t^2 = c^2 \Delta t_0^2")
+        equation5 = MathTex(r"\frac{\left(c^2 - v^2\right)}{c^2} \Delta t^2 = \Delta t_0^2")
+        equation6 = MathTex(r"\left(1 - \frac{v^2}{c^2}\right) \Delta t^2 = \Delta t_0^2")
+        equation7 = MathTex(r"\sqrt{\left(1 - \frac{v^2}{c^2}\right) \Delta t^2} = \sqrt{\Delta t_0^2}")
+        equation8 = MathTex(r"\sqrt{\left(1 - \frac{v^2}{c^2}\right)} \Delta t = \Delta t_0")
+        equation9 = MathTex(r"\Delta t = \frac{1}{\sqrt{\left(1 - \frac{v^2}{c^2}\right)}}\Delta t_0")
+        equation10 = MathTex(r"\Delta t = \gamma\Delta t_0")
+        equations = Group(equation1, equation2, equation3, equation4, equation5, equation6, equation7, equation8, equation9, equation10)
+        equations.shift(0.5*DOWN)
+        for i in [2,3,9,10]: equation1[0][i].set_color(BLUE)
+        for i in [2,3,8,9]: 
+            equation2[0][i].set_color(BLUE)
+            equation3[0][i].set_color(BLUE)
+        for i in [7,8]: equation4[0][i].set_color(BLUE)
+        for i in [10,11]: equation5[0][i].set_color(BLUE)
+        for i in [11,12]: 
+            equation6[0][i].set_color(BLUE)
+            equation7[0][i].set_color(BLUE)
+            equation8[0][i].set_color(BLUE)
+        for i in [0,1]: 
+            equation9[0][i].set_color(BLUE)
+            equation10[0][i].set_color(BLUE)
+
+        for i in [-3,-4,-5]: equation1[0][i].set_color(RED)
+        for i in [-2, -3,-4]: 
+            equation2[0][i].set_color(RED)
+            equation3[0][i].set_color(RED)
+            equation4[0][i].set_color(RED)
+            equation5[0][i].set_color(RED)
+            equation6[0][i].set_color(RED)
+            equation7[0][i].set_color(RED)
+        for i in[-1,-2,-3]:
+            equation8[0][i].set_color(RED)
+            equation9[0][i].set_color(RED)
+            equation10[0][i].set_color(RED)
+
+        self.play(things_to_shift.animate.shift(UP))
+        # Animate copies of each symbol into the equation
+        self.play(
+            TransformByGlyphMap(ct_label, equation1[0][1:4], from_copy=True),  # "a" into "a" of "a^2"
+            TransformByGlyphMap(vt_label, equation1[0][8:11], from_copy=True),  # "b" into "b" of "b^2"
+            TransformByGlyphMap(ct__label, equation1[0][15:19], from_copy=True),  # "c" into "c" of "c^2"
+        )
+        self.play(Write(equation1[0][0]), Write(equation1[0][4:6]), Write(equation1[0][7]), Write(equation1[0][11:13]), Write(equation1[0][14]), Write(equation1[0][19:21]))  # the "2"s
+        self.play(Write(equation1[0][6]), Write(equation1[0][13]))  # "+" and "="
+        self.play(
+            TransformByGlyphMap(
+                equation1, equation2,
+                ([0,4,7,11,14,19],[]),
+                ([5], [1,4]),
+                ([12],[7,10]),
+                ([20],[13,16]),
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                equation2, equation3,
+                ([5,11],[11,5]),
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                equation3, equation4,
+                ([],[0,6]),
+                ([2,3,4],[7,8,9]),
+                ([8,9,10],[7,8,9]),
+            )          
+        )
+        self.play(
+            TransformByGlyphMap(
+                equation4, equation5,
+                ([],[7]),
+                ([11,12],[8,9])
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                equation5, equation6,
+                ([3,6,8,9],[2,8,6,7]),
+                ([1,2,8,9],[1])
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                equation6, equation7,
+                ([],[0,1,15,16]),
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                equation7, equation8,
+                ([13,15,16,19],[])
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                equation8, equation9,
+                ([11,12,13],[0,1,2]),
+                ([],[3,4])
+            )
+        )
+
+        self.wait()
+
+        lorentz_equation = MathTex(r"\gamma=\frac{1}{\sqrt{\left(1 - \frac{v^2}{c^2}\right)}}").shift(2.5*DOWN)
+        
+        self.play(
+            Write(lorentz_equation[0][0:2]),
+            TransformFromCopy(equation9[0][3], lorentz_equation[0][2:]),
+            TransformByGlyphMap(
+                equation9, equation10,
+                ([3,4,5,6,7,8,9,10,11,12,13,14,15],[3])
+            )
+        )
+
+        self.wait()
+        return
+
+class LorentzFactorPlot(Scene):
+    def construct(self):
+        #Axes
+        axes = Axes(
+            x_range=[0, 1.1, 0.1], # normalized v/c (cannot reach 1)
+            y_range=[0, 29, 1],
+            axis_config={"color": BLUE},
+            x_axis_config={"numbers_to_include": np.arange(0, 1.1, 0.2), "decimal_number_config": {"num_decimal_places": 1}},
+            y_axis_config={"numbers_to_include": np.arange(0, 29, 5)}
+        )
+
+        labels = axes.get_axis_labels(x_label="v/c", y_label="\\gamma")
+
+        # Lorentz factor function
+        lorentz_factor = lambda x: 1 / np.sqrt(1 - x**2)
+
+        graph = axes.plot(lorentz_factor, x_range=[0, 0.999, 0.001], color=YELLOW)
+
+        # Title
+        title = Text("Lorentz Factor vs Speed", font_size=36).to_edge(UP)
+
+        # Display everything
+        self.play(Create(axes), Write(labels))
+        self.play(Write(title))
+        self.play(Create(graph))
+
+        # Highlight divergence near v/c -> 1
+        dot = Dot(color=RED).move_to(axes.c2p(0.999, lorentz_factor(0.999)))
+        note = Text("Diverges as v → c", font_size=28, color=RED).next_to(dot, UP+LEFT)
+        self.play(FadeIn(dot), Write(note))
+
+        self.wait()
 
 class ExplainRelitivisticDiagrams(Scene):
     def construct(self):
         diagram = SpaceTimeGrid(self, speed=0)
 
-        diagram.create(run_time=2)
+        diagram.create(run_time=2, moving_object=False)
         self.wait()
 
         line = WorldLine(diagram, speed=0.2)
@@ -365,4 +476,23 @@ class ExplainRelitivisticDiagrams(Scene):
         line.draw_angle()
         self.wait()
 
+        label = MathTex(r"\theta = tan(v/c)")
+        label.next_to(line.angle)
+
+        self.play(Write(label))
+        self.wait()
+        self.play(FadeOut(label, line.angle, line.line_head))
+        self.wait()
+
+        diagram.set_speed(0.2)
+
+        diagram.create(observer=False)
+        self.remove(line.line)
+        self.wait()
+
+        return
+    
+class Testing(Scene):
+    def construct(self):
+        
         return

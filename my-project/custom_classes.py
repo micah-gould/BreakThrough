@@ -31,7 +31,7 @@ class SpaceTimeGrid:
             angle = np.arctan(self.speed.get_value()) if flip == -1 else PI/2 - np.arctan(self.speed.get_value())
             speed = self.speed.get_value()
 
-            if speed == 0: return VMobject()
+            if speed == 0: return NumberLine().set_opacity(0)
 
             if abs(speed) <= 0.99:
                 nl = NumberLine(
@@ -66,11 +66,11 @@ class SpaceTimeGrid:
             nl.rotate(angle, about_point=ORIGIN).scale(self.scale_factor).shift(self.grid @ (0, 0) - nl @ (0))
             return nl
 
-        self.x__line = always_redraw(lambda: make_number_line(1))
+        self.x__line = always_redraw(lambda: make_number_line(-1))
         
         self.x__label = always_redraw(lambda: Text("Space (x')" if self.speed.get_value() != 0 else "", font_size=36).move_to(self.grid @ (self.max_number, (self.speed.get_value() + 1/24) * self.max_number)).scale(self.scale_factor))
 
-        self.ct__line = always_redraw(lambda: make_number_line(-1))
+        self.ct__line = always_redraw(lambda: make_number_line(1))
         
         self.ct__label = always_redraw(lambda: Text("Time (ct')" if self.speed.get_value() != 0 else "", font_size=36).move_to(self.grid @ ((self.speed.get_value() + 1/8) * self.max_number, self.max_number * 47/48)).scale(self.scale_factor))
 
@@ -237,7 +237,7 @@ class WorldLine:
         self.line = always_redraw(lambda: Line(self.line_head.get_center(), self.diagram.grid @ (0, 0), color=self.color, stroke_width=2)).scale(0.5)
         
         self.diagram.scene.play(Create(self.line_head), Create(self.line))
-        self.wait()
+        self.diagram.scene.wait()
         self.diagram.scene.play(self.line_head.animate.move_to(self.diagram.grid @ ((self.diagram.max_number - self.diagram.count) * self.angle, self.diagram.max_number - self.diagram.count)))
 
     def draw_angle(self):
