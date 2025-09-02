@@ -107,9 +107,9 @@ class GalilainEquations(Scene): # Done
         v = MathTex('{{u\'}} = {{u}} - {{v}}')
         equations = VGroup(x, t, v).arrange(DOWN, aligned_edge=LEFT).scale(1.2)
 
-        prime_color = PURPLE
+        prime_color = RED
         var_color = BLUE
-        v_color = RED
+        v_color = PURPLE
 
         for eq in equations:
             for sym in ["x", "t", "u"]:
