@@ -104,8 +104,8 @@ class GalilainEquations(Scene): # Done
     def construct(self):
         x = MathTex('{{x\'}} = {{x}} - {{v}}{{t}}')
         t = MathTex('{{t\'}} = {{t}}')
-        v = MathTex('{{u\'}} = {{u}} - {{v}}')
-        equations = VGroup(x, t, v).arrange(DOWN, aligned_edge=LEFT).scale(1.2)
+        u = MathTex('{{u\'}} = {{u}} - {{v}}')
+        equations = VGroup(x, t, u).arrange(DOWN, aligned_edge=LEFT).scale(1.2)
 
         prime_color = RED
         var_color = BLUE
@@ -141,7 +141,7 @@ class GalilainEquations(Scene): # Done
         equations.next_to(legend, DOWN, buff=1)
 
         self.play(FadeIn(legend, shift=DOWN))
-        self.play(Write(x), Write(t), Write(v))
+        self.play(Write(x), Write(t), Write(u))
         self.wait()
         return
 
@@ -263,7 +263,8 @@ class LightClockExplenation(Scene):
         self.wait()
 
         return
-class Equations(Scene):
+
+class LorentzDerivation(Scene):
     def construct(self):
         background = NumberPlane(
             x_range=[-100, 100, 1], 
@@ -465,6 +466,144 @@ class LorentzFactorPlot(Scene):
 
         self.wait()
 
+class LorentzEquations(Scene):
+    def construct(self):
+        x = MathTex(r"x' = \gamma\left(x - vt\right)")
+        t = MathTex(r"t' = \gamma\left(t - \frac{vx}{c^2}\right)")
+        u = MathTex(r"u' = \frac{dx'}{dt'}")
+        equations = VGroup(x, t, u).arrange(DOWN, aligned_edge=LEFT).scale(1.2)
+
+        prime_color = RED
+        var_color = BLUE
+        v_color = PURPLE
+
+        for i in [0,1]: 
+            x[0][i].set_color(prime_color)
+            t[0][i].set_color(prime_color)
+        for i in [5,8]: 
+            x[0][i].set_color(var_color)
+            t[0][i].set_color(var_color)
+        for i in [7]: 
+            x[0][i].set_color(v_color)
+            t[0][i].set_color(v_color)
+        
+        for i in [0,1,3,4,5,7,8,9]: u[0][i].set_color(prime_color)
+
+        legend_left = VGroup(
+            MathTex("x, t, u").set_color(var_color),
+            MathTex("v").set_color(v_color),
+            MathTex("x', t', u'").set_color(prime_color),
+        )
+
+        legend_right = VGroup(
+            Tex("variables in the observer frame (position, time, velocity)"),
+            Tex("relative velocity between frames"),
+            Tex("variables in the moving frame (position, time, velocity)"),
+        )
+
+        legend = VGroup(
+            VGroup(legend_left[0], legend_right[0]).arrange(RIGHT, buff=0.3, aligned_edge=DOWN),
+            VGroup(legend_left[1], legend_right[1]).arrange(RIGHT, buff=0.3, aligned_edge=DOWN),
+            VGroup(legend_left[2], legend_right[2]).arrange(RIGHT, buff=0.3, aligned_edge=DOWN),
+        ).arrange(DOWN, aligned_edge=LEFT).scale(0.8)
+
+        legend.to_edge(UP)
+        equations.next_to(legend, DOWN, buff=1)
+
+        self.play(FadeIn(legend, shift=DOWN))
+        self.play(Write(x), Write(t), Write(u))
+        self.wait()
+
+        u1 = MathTex(r"u' = \frac{\gamma\left(dx - vdt\right)}{\gamma\left(dt - \frac{vdx}{c^2}\right)}")
+        u2 = MathTex(r"u' = \frac{dx - vdt}{dt - \frac{v}{c^2}dx}")
+        u3 = MathTex(r"u' = \frac{\frac{dx}{dt} - \frac{vdt}{dt}}{\frac{dt}{dt} - \frac{v}{c^2}\frac{dx}{dt}}")
+        u4 = MathTex(r"u' = \frac{u - v}{1 - \frac{v}{c^2}u}")
+        u5 = MathTex(r"u' = \frac{u - v}{1 - \frac{uv}{c^2}}")
+
+        for i in [0,1]:
+            u1[0][i].set_color(prime_color)
+            u2[0][i].set_color(prime_color)
+            u3[0][i].set_color(prime_color)
+            u4[0][i].set_color(prime_color)
+            u5[0][i].set_color(prime_color)
+        
+        for i in [5,6,9,10,15,16,19,20]:
+            u1[0][i].set_color(var_color)
+        for i in [8,18]:
+            u1[0][i].set_color(v_color)
+
+        for i in [3,4,7,8,10,11,17,18]:
+            u2[0][i].set_color(var_color)
+        for i in [6,13]:
+            u2[0][i].set_color(v_color)
+
+        for i in [3,4,5,6,7,10,11,12,13,14,16,17,18,19,20,26,27,28,29,30]:
+            u3[0][i].set_color(var_color)
+        for i in [9,22]:
+            u3[0][i].set_color(v_color)
+
+        for i in [3,13]:
+            u4[0][i].set_color(var_color)
+        for i in [5,9]:
+            u4[0][i].set_color(v_color)
+
+        for i in [3,9]:
+            u5[0][i].set_color(var_color)
+        for i in [5,10]:
+            u5[0][i].set_color(v_color)
+
+        Group(u1, u2, u3, u4, u5).scale(1.2).shift(u.get_center_of_mass() - u1.get_center_of_mass())
+
+        self.play(
+            ReplacementTransform(u[0][:3], u1[0][:3]),
+            TransformFromCopy(x[0][3:5], u1[0][3:5]),
+            TransformFromCopy(u[0][3], u1[0][5]),
+            TransformFromCopy(x[0][5:8], u1[0][6:9]),
+            ReplacementTransform(u[0][3], u1[0][9]),
+            TransformFromCopy(x[0][8:], u1[0][10:12]),
+            ReplacementTransform(u[0][6], u1[0][12]),
+            TransformFromCopy(t[0][3:5], u1[0][13:15]),
+            TransformFromCopy(u[0][7], u1[0][15]),
+            TransformFromCopy(t[0][5:8], u1[0][16:19]),
+            ReplacementTransform(u[0][7], u1[0][19]),
+            TransformFromCopy(t[0][8:], u1[0][20:]),
+            FadeOut(u[0][4:6], u[0][8:10])
+        )
+
+        self.play(
+            TransformByGlyphMap(
+                u1, u2,
+                ([3,4,11,13,14,24],[]),
+                ([19,20],[17,18])
+            )
+        )
+
+        self.play(
+            TransformByGlyphMap(
+                u2, u3,
+                ([],[5,6,7,12,13,14,18,19,20,28,29,30]),
+            )
+        )
+
+        self.play(
+            TransformByGlyphMap(
+                u3, u4,
+                ([3,4,5,6,7],[3]),
+                ([10,11,12,13,14],[]),
+                ([16,17,18,19,20],[7]),
+                ([26,27,28,29,30],[13]),
+            )
+        )
+
+        self.play(
+            TransformByGlyphMap(
+                u4, u5,
+                ([13],[9])
+            )
+        )
+
+        self.wait()
+        return
 class ExplainRelitivisticDiagrams(Scene):
     def construct(self):
         diagram = SpaceTimeGrid(self, speed=0)
@@ -480,12 +619,27 @@ class ExplainRelitivisticDiagrams(Scene):
         line.draw_angle()
         self.wait()
 
-        label = MathTex(r"\theta = tan(v/c)")
-        label.next_to(line.angle)
+        label1 = MathTex(r"\theta = arctan\left(\frac{x}{ct}\right)")
+        label2 = MathTex(r"\theta = arctan\left(\frac{vt}{ct}\right)")
+        label3 = MathTex(r"\theta = arctan\left(\frac{v}{c}\right)")
+        labels = Group(label1, label2, label3)
+        labels.next_to(line.angle)
 
-        self.play(Write(label))
+        self.play(Write(label1))
+        self.play(
+            TransformByGlyphMap(
+                label1, label2,
+                ([9],[9,10])
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                label2, label3,
+                ([10,13],[])
+            )
+        )
         self.wait()
-        self.play(FadeOut(label, line.angle, line.line_head))
+        self.play(FadeOut(label3, line.angle, line.line_head))
         self.wait()
 
         diagram.set_speed(0.2)
