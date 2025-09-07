@@ -47,7 +47,7 @@ class ExplainTheDiagram(Scene): # Done
         self.play(FadeOut(me))
         return
     
-class TwoTrains(Scene):
+class TwoTrains(Scene): # Done
     def construct(self):
         first_train_x = NumberLine(x_range=[-1, 1, 1], length=4, color=BLUE, exclude_origin_tick=True, z_index=100, tip_shape=StealthTip, include_tip=True).shift(UP)
         first_train_t = NumberLine(x_range=[0, 2, 2], length=4, color=MAROON_A, include_tip=True, exclude_origin_tick=True, z_index=-1).rotate(90*DEGREES, about_point=ORIGIN).shift(first_train_x @ (-1) - ORIGIN)
@@ -96,8 +96,6 @@ class TwoTrains(Scene):
 
         showTrainMovmement()
 
-        # TODO: add more?
-
         return 
     
 class GalilainEquations(Scene): # Done
@@ -145,7 +143,7 @@ class GalilainEquations(Scene): # Done
         self.wait()
         return
 
-class LightClockExplenation(Scene):
+class LightClockExplenation(Scene): # Done
     def construct(self):
         background = NumberPlane(
             x_range=[-100, 100, 1], 
@@ -264,7 +262,7 @@ class LightClockExplenation(Scene):
 
         return
 
-class LorentzDerivation(Scene):
+class LorentzDerivation(Scene): # Done
     def construct(self):
         background = NumberPlane(
             x_range=[-100, 100, 1], 
@@ -433,7 +431,7 @@ class LorentzDerivation(Scene):
         self.wait()
         return
 
-class LorentzFactorPlot(Scene):
+class LorentzFactorPlot(Scene): # Done
     def construct(self):
         #Axes
         axes = Axes(
@@ -466,7 +464,7 @@ class LorentzFactorPlot(Scene):
 
         self.wait()
 
-class LorentzEquations(Scene):
+class LorentzEquations(Scene): # Done
     def construct(self):
         x = MathTex(r"x' = \gamma\left(x - vt\right)")
         t = MathTex(r"t' = \gamma\left(t - \frac{vx}{c^2}\right)")
@@ -604,14 +602,15 @@ class LorentzEquations(Scene):
 
         self.wait()
         return
-class ExplainRelitivisticDiagrams(Scene):
+class ExplainRelitivisticDiagrams(Scene): # Done
     def construct(self):
+        speed=0.3
         diagram = SpaceTimeGrid(self, speed=0)
 
         diagram.create(run_time=2, moving_object=False)
         self.wait()
 
-        line = WorldLine(diagram, speed=0.2)
+        line = WorldLine(diagram, speed=speed)
         
         line.draw()
         self.wait()
@@ -623,7 +622,7 @@ class ExplainRelitivisticDiagrams(Scene):
         label2 = MathTex(r"\theta = arctan\left(\frac{vt}{ct}\right)")
         label3 = MathTex(r"\theta = arctan\left(\frac{v}{c}\right)")
         labels = Group(label1, label2, label3)
-        labels.next_to(line.angle)
+        labels.next_to(line.angle).shift(UP)
 
         self.play(Write(label1))
         self.play(
@@ -639,17 +638,66 @@ class ExplainRelitivisticDiagrams(Scene):
             )
         )
         self.wait()
-        self.play(FadeOut(label3, line.angle, line.line_head))
+
+        t = MathTex(r"t' = \gamma\left(t - \frac{vx}{c^2}\right)")
+        t1 = MathTex(r"0 = \gamma\left(t - \frac{vx}{c^2}\right)")
+        t2 = MathTex(r"0 = t - \frac{vx}{c^2}")
+        t3 = MathTex(r"t = \frac{vx}{c^2}")
+        t4 = MathTex(r"\frac{ct}{x} = \frac{v}{c}")
+        Group(t, t1, t2, t3, t4).shift(DR+RIGHT)
+
+        self.play(Write(t))
+        self.play(
+            TransformByGlyphMap(
+                t, t1,
+                ([0,1],[0])
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                t1, t2,
+                ([2,3,11],[])
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                t2, t3,
+                ([0, 3],[]),
+                ([2],[0])
+            )
+        )
+        self.play(
+            TransformByGlyphMap(
+                t3, t4,
+                ([6],[]),
+                ([5],[0,7]),
+                ([4],[2,6]),
+                ([0,1,2,3],[1,4,5,3])
+            )
+        )
         self.wait()
 
-        diagram.set_speed(0.2)
-
-        diagram.create(observer=False)
-        self.remove(line.line)
+        line2 = Line(diagram.grid @ (diagram.max_number - diagram.count, (diagram.max_number - diagram.count) * np.arctan(speed)), diagram.grid @ (0, 0), stroke_width=2, color=YELLOW)
+        angle2 = Angle(diagram.grid.get_x_axis(), line2, quadrant=(1, -1), radius=np.linalg.norm(diagram.grid @ (0, 3 * diagram.count) - diagram.grid @ (0, 0)))
+        self.play(Create(line2), Create(angle2))
         self.wait()
 
+        self.play(FadeOut(*VGroup(line.line_head, line.angle, angle2, t4, label3)))
+
+        diagram2 = SpaceTimeGrid(self, speed=speed)
+        diagram2.show()
+
+        self.play(FadeOut(*VGroup(line.line, line2)))
+        self.wait()
         return
     
+class RelitivisticDiagrams(Scene):
+    def construct(self):
+        diagram = SpaceTimeGrid(self, speed=0.3)
+        diagram.show()
+
+        self.wait()
+        return
 class Testing(Scene):
     def construct(self):
         
