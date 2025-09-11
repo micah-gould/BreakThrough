@@ -102,46 +102,49 @@ class SpaceTimeGrid:
         self.scene.play(self.speed.animate(run_time=1/60).set_value(new_speed))
 
 class Location:
-    def __init__(self, diagram, x, ct):
+    def __init__(self, diagram, x, ct, name=""):
+        self.diagram = diagram
         self.x = ValueTracker(x)
         self.ct = ValueTracker(ct)
-        self.diagram = diagram
-        self.everything = VGroup()
+        self.name = name
+
+        # Create the lines
+        self.x_line = always_redraw(
+            lambda: Line(self.diagram.grid @ (self.x.get_value(), 0), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), stroke_width=1)
+        )
+        self.ct_line = always_redraw(
+            lambda: Line(self.diagram.grid @ (0, self.ct.get_value()), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), stroke_width=1)
+        )
+
+        # Create the point
+        self.point = always_redraw(
+            lambda: Dot(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=RED, radius=0.04, z_index=1000)
+        )
+        self.label = always_redraw(lambda: MathTex(self.name).next_to(self.point, UR*0.1).scale(0.7))
+
+        # Create the prime lines 
+        self.x__line = always_redraw(
+            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ self.diagram.prime_to_cords(self._x(self.x.get_value(), self.ct.get_value()), 0), color=YELLOW, stroke_width=0.5)
+        )
+        self.ct__line = always_redraw(
+            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ self.diagram.prime_to_cords(0, self._ct(self.x.get_value(), self.ct.get_value())), color=YELLOW, stroke_width=0.5)
+        )
+
+        self.everything = VGroup(self.x_line, self.ct_line, self.point, self.label, self.x__line, self.ct__line)
     
     _x = lambda self, x, ct: ((x - self.diagram.speed.get_value() * ct) / (1 - self.diagram.speed.get_value()**2)**0.5)
     _ct = lambda self, x, ct: ((ct - self.diagram.speed.get_value() * x) / (1 - self.diagram.speed.get_value()**2)**0.5)
 
     def plot_lines(self, **kwargs):
-        # Create the lines
-        x_line = always_redraw(
-            lambda: Line(self.diagram.grid @ (self.x.get_value(), 0), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), stroke_width=1)
-        )
-        ct_line = always_redraw(
-            lambda: Line(self.diagram.grid @ (0, self.ct.get_value()), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), stroke_width=1)
-        )
-        self.everything.add(x_line, ct_line)
-        self.diagram.scene.play(Create(x_line), Create(ct_line), **kwargs)
+        self.diagram.scene.play(Create(self.x_line), Create(self.ct_line), **kwargs)
         self.diagram.scene.wait(0.1)
 
     def plot_point(self, **kwargs):
-        # Create the point
-        point = always_redraw(
-            lambda: Dot(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=RED, radius=0.04)
-        )
-        self.everything.add(point)
-        self.diagram.scene.play(Create(point), **kwargs)
+        self.diagram.scene.play(Create(self.point), Write(self.label), **kwargs)
         self.diagram.scene.wait(0.1)
 
     def plot__lines(self, **kwargs):
-        # Create the lines 
-        x__line = always_redraw(
-            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ self.diagram.prime_to_cords(self._x(self.x.get_value(), self.ct.get_value()), 0), color=YELLOW, stroke_width=0.5)
-        )
-        ct__line = always_redraw(
-            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ self.diagram.prime_to_cords(0, self._ct(self.x.get_value(), self.ct.get_value())), color=YELLOW, stroke_width=0.5)
-        )
-        self.everything.add(x__line, ct__line)
-        self.diagram.scene.play(Create(x__line), Create(ct__line), **kwargs)
+        self.diagram.scene.play(Create(self.x__line), Create(self.ct__line), **kwargs)
         self.diagram.scene.wait(0.1)
 
     get_prime_coords = lambda self: (self._x(self.x.get_value(), self.ct.get_value()), self._ct(self.x.get_value(), self.ct.get_value()))
@@ -159,10 +162,11 @@ class Location:
         self.diagram.scene.play(self.x.animate(**kwargs).set_value(x), self.ct.animate(**kwargs).set_value(ct))
 
 class PrimeLocation:
-    def __init__(self, diagram, x, ct):
-        self._x = ValueTracker(x)
-        self._ct = ValueTracker(ct)   
+    def __init__(self, diagram, x, ct, name="" ):
         self.diagram = diagram
+        self._x = ValueTracker(x)
+        self._ct = ValueTracker(ct)
+        self.name = name
         self.x = ValueTracker()
         self.ct = ValueTracker()
 
@@ -176,40 +180,43 @@ class PrimeLocation:
         dummy = Mobject()
         dummy.add_updater(update_outputs)
         self.diagram.scene.add(dummy)
-        
-        self.everything = VGroup()
 
-    def plot__lines(self, **kwargs):
-        # Create the lines
-        x__line = always_redraw(
+        update_outputs(None)
+
+        # Create the prime lines
+        self.x__line = always_redraw(
             lambda: Line(self.diagram.grid @ self.diagram.prime_to_cords(self._x.get_value(), 0), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
         )
-        ct__line = always_redraw(
+        self.ct__line = always_redraw(
             lambda: Line(self.diagram.grid @ self.diagram.prime_to_cords(0, self._ct.get_value()), self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=YELLOW, stroke_width=0.5)
         )
-        self.everything.add(x__line, ct__line)
-        self.diagram.scene.play(Create(x__line), Create(ct__line), **kwargs)
+
+        # Create the point
+        self.point = always_redraw(
+            lambda: Dot(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=RED, radius=0.04, z_index=1000)
+        )
+        self.label = always_redraw(lambda: MathTex(self.name).next_to(self.point, UR*0.1).scale(0.7))
+
+        # Create the lines
+        self.x_line = always_redraw(
+            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ (self.x.get_value(), 0), stroke_width=1)
+        )
+        self.ct_line = always_redraw(
+            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ (0, self.ct.get_value()), stroke_width=1)
+        )
+        
+        self.everything = VGroup(self.x__line, self.ct__line, self.point, self.label, self.x_line, self.ct_line)
+
+    def plot__lines(self, **kwargs):
+        self.diagram.scene.play(Create(self.x__line), Create(self.ct__line), **kwargs)
         self.diagram.scene.wait(0.1)
 
     def plot_point(self, **kwargs):
-        # Create the point
-        point = always_redraw(
-            lambda: Dot(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), color=RED, radius=0.04)
-        )
-        self.everything.add(point)
-        self.diagram.scene.play(Create(point), **kwargs)
+        self.diagram.scene.play(Create(self.point), Write(self.label), **kwargs)
         self.diagram.scene.wait(0.1)
 
     def plot_lines(self, **kwargs):
-        # Create the lines
-        x_line = always_redraw(
-            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ (self.x.get_value(), 0), stroke_width=1)
-        )
-        ct_line = always_redraw(
-            lambda: Line(self.diagram.grid @ (self.x.get_value(), self.ct.get_value()), self.diagram.grid @ (0, self.ct.get_value()), stroke_width=1)
-        )
-        self.everything.add(x_line, ct_line)
-        self.diagram.scene.play(Create(x_line), Create(ct_line), **kwargs)
+        self.diagram.scene.play(Create(self.x_line), Create(self.ct_line), **kwargs)
         self.diagram.scene.wait(0.1)
 
     get_coords = lambda self: (self.x.get_value(), self.ct.get_value())

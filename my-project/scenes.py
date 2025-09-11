@@ -691,14 +691,56 @@ class ExplainRelitivisticDiagrams(Scene): # Done
         self.wait()
         return
     
-class RelitivisticDiagrams(Scene):
+class RelitivisticDiagrams(Scene): # Done
     def construct(self):
         diagram = SpaceTimeGrid(self, speed=0.3)
         diagram.show()
 
-        self.wait()
-        return
-class Testing(Scene):
-    def construct(self):
+        def resolve(a, *args):
+            if isinstance(a, ValueTracker):
+                return a.get_value()
+            elif callable(a):
+                return a(*args)
+            else:
+                return a   # plain value
         
+        get_row = lambda dot, name: [
+                MathTex(name), 
+                Text(f"({resolve(dot.x):.2f},").set_color(dot.point.color).scale(0.7),
+                Text(f"{resolve(dot.ct):.2f})").set_color(dot.point.color).scale(0.7),
+                Text(f"({resolve(dot._x, resolve(dot.x), resolve(dot.ct)):.2f},").set_color(dot.point.color).scale(0.7),
+                Text(f"{resolve(dot._ct, resolve(dot.x), resolve(dot.ct)):.2f})").set_color(dot.point.color).scale(0.7),
+            ]
+        
+        A = Location(diagram, x=10, ct=10, name="A")
+        B = PrimeLocation(diagram, x=10, ct=10, name="B")
+
+        # Dynamic table generator
+        def make_table():
+            headers = [MathTex(""), MathTex("(x,"), MathTex("ct)"), MathTex("(x',"), MathTex("ct')")]
+            A_row = get_row(A, A.name)
+            B_row = get_row(B, B.name)
+            table = VGroup(*headers, *A_row, *B_row)
+            table.arrange_in_grid(rows=3, cols=5, buff=0.4, cell_alignment=RIGHT)
+            table.scale(0.5)
+            table.to_corner(UR)
+            return table
+
+        # Single always_redraw for the entire table
+        dynamic_table = always_redraw(make_table)
+
+        A.create(run_time=1/3)
+        B.create(run_time=1/3)
+
+        speed_text = always_redraw(lambda: Text(f"v = {diagram.speed.get_value():.2f}c").next_to(dynamic_table, DOWN).scale(0.7))
+
+        self.add(dynamic_table, speed_text)
+
+        self.wait()
+
+        A.move_to(13, 17)
+        B.move_to(8, 5)
+        diagram.change_speed(0.6)
+
+        self.wait()
         return
