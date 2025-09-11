@@ -734,13 +734,15 @@ class RelitivisticDiagrams(Scene): # Done
 
         speed_text = always_redraw(lambda: Text(f"v = {diagram.speed.get_value():.2f}c").next_to(dynamic_table, DOWN).scale(0.7))
 
-        self.add(dynamic_table, speed_text)
+        self.play(Create(dynamic_table), Write(speed_text))
 
         self.wait()
 
         A.move_to(13, 17)
         B.move_to(8, 5)
         diagram.change_speed(0.6)
+        A.move_to(9, 3)
+        B.move_to(-4, 12)
 
         self.wait()
         return
