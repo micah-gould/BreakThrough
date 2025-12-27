@@ -2,13 +2,13 @@ from manim import *
 from custom_classes import *
 from MF_Tools import TransformByGlyphMap
 
-# TODO: Add subtitles later
-
-class ExplainTheDiagram(Scene): # Done
+class ExplainTheDiagram(Scene): # TODO: Rerender
     def construct(self):
         first_train_x = NumberLine(x_range=[-1, 1, 1], length=4, color=BLUE, exclude_origin_tick=True, tip_shape=StealthTip, include_tip=True).shift(UP)
+        label_x = Text("Space").next_to(first_train_x, RIGHT).set_color(BLUE)
 
         self.play(GrowFromPoint(first_train_x, first_train_x.get_center()))
+        self.play(Write(label_x))
         self.wait()
 
         me = Dot(first_train_x @ (0), color=YELLOW, z_index=1000)
@@ -16,22 +16,34 @@ class ExplainTheDiagram(Scene): # Done
         self.play(Create(me))
         self.wait()
 
-        self.play(me.animate.move_to(first_train_x @ (1)), rate_func=wiggle, run_time=2)
+        path = ParametricFunction(
+            lambda t: np.array([
+                1.9*np.sin(2*PI*t/3.5),  # x wiggle
+                0,                # y upward
+                0
+            ]),
+            t_range=[0, 3.5],  # duration of motion
+        ).shift(first_train_x @ (0))
+
+        self.play(MoveAlongPath(me, path), run_time=2, rate_func=linear)
         self.wait()
         
         first_train_t = NumberLine(x_range=[0, 2, 2], length=4, color=MAROON_A, include_tip=True, exclude_origin_tick=True, z_index=-1).rotate(90*DEGREES, about_point=ORIGIN).shift(first_train_x @ (-1) - ORIGIN)
+        label_t = Text("Time").next_to(first_train_t, UP).set_color(MAROON_A)
 
         distance = first_train_t @ (0) - first_train_x @ (-1)
         # Animate outward from the middle
         self.play(
             GrowFromPoint(first_train_t, first_train_t.get_center()),
+            label_x.animate.shift(distance),
             first_train_x.animate.shift(distance),
             me.animate.shift(distance),
             lag_ratio=0,
         )
+        self.play(Write(label_t))
         self.wait()
 
-        path = ParametricFunction(
+        path2 = ParametricFunction(
             lambda t: np.array([
                 1.9*np.sin(2*PI*t/3.5),  # x wiggle
                 t,                # y upward
@@ -41,19 +53,21 @@ class ExplainTheDiagram(Scene): # Done
         ).shift(first_train_x @ (0))
 
         # Animate the dot along the path
-        self.play(MoveAlongPath(me, path), run_time=2, rate_func=linear)
+        self.play(MoveAlongPath(me, path2), run_time=2, rate_func=linear)
         self.wait()
 
         self.play(FadeOut(me))
         return
     
-class TwoTrains(Scene): # Done
+class TwoTrains(Scene): # TODO: Rerender
     def construct(self):
         first_train_x = NumberLine(x_range=[-1, 1, 1], length=4, color=BLUE, exclude_origin_tick=True, z_index=100, tip_shape=StealthTip, include_tip=True).shift(UP)
         first_train_t = NumberLine(x_range=[0, 2, 2], length=4, color=MAROON_A, include_tip=True, exclude_origin_tick=True, z_index=-1).rotate(90*DEGREES, about_point=ORIGIN).shift(first_train_x @ (-1) - ORIGIN)
         first_train_x.shift(first_train_t @ (0) - first_train_x @ (-1))
+        label_1_x = Text("Space").next_to(first_train_x, RIGHT).set_color(BLUE)
+        label_1_t = always_redraw(lambda: Text("Time").next_to(first_train_t, UP).set_color(MAROON_A))
 
-        self.add(first_train_x, first_train_t)
+        self.add(first_train_x, first_train_t, label_1_t, label_1_x)
         
         line_head = Dot(first_train_x @ (-1), color=MAROON_B, z_index=1000)
         line = always_redraw(lambda: Line(line_head.get_center(), first_train_x @ (-1), color=MAROON_B, z_index=-2, stroke_width=2))
@@ -65,8 +79,10 @@ class TwoTrains(Scene): # Done
 
         second_train_t = NumberLine(x_range=[0, 2, 2], length=8/np.sqrt(3), color=MAROON_B, include_tip=True, exclude_origin_tick=True, z_index=-2).rotate(60*DEGREES, about_point=ORIGIN)
         second_train_t.shift(first_train_x @ (-1) - second_train_t @ (0))
+        label_2_t = always_redraw(lambda: Text("Time (other train)").next_to(second_train_t, UR).set_color(MAROON_B))
 
         self.play(FadeIn(second_train_t), FadeOut(line), FadeOut(line_head))
+        self.play(Write(label_2_t))
         self.wait()
 
         second_train_x = NumberLine(x_range=[-1, 1, 1], length=4, color=YELLOW, exclude_origin_tick=True, z_index=101, tip_shape=StealthTip, include_tip=True)
